@@ -1,10 +1,11 @@
-# Bondock Echo
+# Boondock Echo
 
-## What is Boondock
-Boondock is a project created for emergency radio communications. A boondock module connects to a Ham radio device using a cable to connect mic and speaker to bookdock. Once started, it will listen to radio for messages. Whenever new messages are received, it captures the audio, converts it to an audio file, and sends it to sever for queue. The message can be played back on the boondock server interface. The sever interface lets you queue multiple messages to be played back to the radio.
+## What is Boondock Echo?
+Boondock is a time-shift audio project created for emergency radio communications. A Boondock Echo module connects to a Ham radio device using audio cables to connect the mic and speaker to the Bookdock Echo moule. Once started, it will listen to the radio for messages. Whenever new messages are received, it captures the audio, converts it to an audio file, and sends it to sever where it is stored and queued for playback. The message can be played back on the boondock server interface or queue multiple messages for playback on a radio.
 
 ## Key features
 <ol>
+  <li>Made from commercial off-the-shelf (COTS) components</li>
   <li>Supports basic radios like Baofeng UV-5R</li>
   <li>Record radio transmissions</li>
   <li>Playback to one/multiple radios</li>
@@ -12,9 +13,24 @@ Boondock is a project created for emergency radio communications. A boondock mod
   <li>Create groups of radios</li>
 </ol>
 
-## Building a boondock
+## Building a Boondock Echo
 
-To build boondock, you need ESP32 Audio kit, a speaker, Li-ion battery, a power switch, and 3d printed enclosure with some screws. 
+To build Boondock, you need ESP32 Audio kit, a speaker, Li-ion battery, a power switch, and 3d printed enclosure with some screws. 
+
+List of purchasable components.
+Currently supported module:
+<ol>
+  <li>1x ESP32 Based Audio Interface: https://www.amazon.com/gp/product/B0B63KZ6C1 </li>
+</ol>
+
+The following parts are what we used to make the prototype.  Other substitutes are fine:
+<ol>
+  <li>1x Handie-Talkie: (Baofeng UV-5R: https://www.amazon.com/dp/B074XPB313 or similar)</li>
+  <li>1x 3.7V rechargable battery with 2.0 mm 2 pin JST connector: (https://www.amazon.com/dp/B095DQJ69Q or simlar)</li>
+  <li>2x 3.5mm male audio cable (https://www.amazon.com/dp/B076BFZDG2/ or similar)</li>
+  <li>1x 3.5mm female to 2.5 mm male stereo audio jack: (https://www.amazon.com/dp/B01FPRADYK or similar)</li>
+  <li>1x Speaker with 2.0mm 2 pin JST connector (https://www.amazon.com/dp/B07FTB281F or similar)</li>
+</ol>
 
 [CLICK HERE](/3d.print/README.md) for details on build instructions
 
