@@ -1,21 +1,22 @@
-/**
- * @file streams-url_mp3-audiokit.ino
- * @author Phil Schatzmann
- * @brief decode MP3 stream from url and output it on I2S on audiokit
- * @version 0.1
- * @date 2021-96-25
- * 
- * @copyright Copyright (c) 2021
+/*
+Boondock echo 1.0
+
+TODO :
+* Play mp3 audio from URL
+* Play audio from file stored on SD Card
+* Setting up Wifi using WiFi Manager Library
+* OTA functionality to automatically download latest firmware
+
  */
 
-// install https://github.com/pschatzmann/arduino-libhelix.git
 
 #include "AudioTools.h"
 #include "AudioCodecs/CodecMP3Helix.h"
 #include "AudioLibs/AudioKit.h"
 
 
-URLStream url("AAA","608980608980");  // or replace with ICYStream to get metadata
+URLStream url("***","*********");
+ 
 AudioKitStream i2s; // final output of decoded stream
 EncodedAudioStream dec(&i2s, new MP3DecoderHelix()); // Decoding stream
 StreamCopy copier(dec, url); // copy url to decoder
