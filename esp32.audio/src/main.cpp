@@ -1,43 +1,40 @@
-/*
-Boondock echo 1.0
-
-TODO :
-* Play mp3 audio from URL
-* Play audio from file stored on SD Card
-* Setting up Wifi using WiFi Manager Library
-* OTA functionality to automatically download latest firmware
-
+/**
+ * @file streams-audiokit-csv.ino
+ * @author Phil Schatzmann
+ * @brief see https://github.com/pschatzmann/arduino-audio-tools/blob/main/examples/examples-audiokit/streams-audiokit-serial/README.md
+ * 
+ * @author Phil Schatzmann
+ * @copyright GPLv3
  */
 
 
 #include "AudioTools.h"
-#include "AudioCodecs/CodecMP3Helix.h"
 #include "AudioLibs/AudioKit.h"
 
-
-URLStream url("***","*********");
- 
 AudioKitStream i2s; // final output of decoded stream
-EncodedAudioStream dec(&i2s, new MP3DecoderHelix()); // Decoding stream
-StreamCopy copier(dec, url); // copy url to decoder
+AudioKitStream kit; // Access I2S as stream
+CsvStream<int16_t> csvStream(Serial);
+ 
+StreamCopy copier(i2s, kit); // copy kit to csvStream
 
+// Arduino Setup
+void setup(void) {
+    Serial.begin(115200);
+    AudioLogger::instance().begin(Serial, AudioLogger::Warning);
+    
+    auto cfg = kit.defaultConfig(RX_MODE);
+    cfg.input_device = AUDIO_HAL_ADC_INPUT_LINE2;
+    kit.begin(cfg);
 
-void setup(){
-  Serial.begin(115200);
-  AudioLogger::instance().begin(Serial, AudioLogger::Info);  
-
-  // setup i2s
-  auto config = i2s.defaultConfig(TX_MODE);
-  i2s.begin(config);
-
-  // setup I2S based on sampling rate provided by decoder
-  dec.begin();
-
-  // mp3 radio
-  url.begin("http://events.bluevan.io/boondock/audio/welcome.mp3","audio/mp3");
+    // make sure that we have the correct channels set up
+    csvStream.begin();
+    auto config = i2s.defaultConfig(TX_MODE);
+    i2s.begin(config);
 
 }
 
-void loop(){
-  copier.copy();
+// Arduino loop - copy data
+void loop() {
+    copier.copy();
 }
+
