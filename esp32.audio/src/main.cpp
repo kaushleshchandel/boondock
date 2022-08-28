@@ -30,7 +30,7 @@ void setup(){
   // setup i2s
   auto config = i2s.defaultConfig(TX_MODE);
   i2s.begin(config);
-
+  i2s.setVolume(1.0);
   // setup I2S based on sampling rate provided by decoder
   dec.begin();
 
