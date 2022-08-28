@@ -9,7 +9,7 @@
  */
 
 // install https://github.com/pschatzmann/arduino-libhelix.git
-
+#define AUDIOKIT_BOARD 5
 #include "AudioTools.h"
 #include "AudioCodecs/CodecMP3Helix.h"
 #include "AudioLibs/AudioKit.h"

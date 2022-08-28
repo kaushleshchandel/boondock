@@ -9,6 +9,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
+#define AUDIOKIT_BOARD 5
 #include "AudioKitHAL.h"
 
 #include "SD.h"
