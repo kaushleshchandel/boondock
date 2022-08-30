@@ -1,57 +1,56 @@
-/**
- * @file player-sd-audiokit.ino
- * @brief see https://github.com/pschatzmann/arduino-audio-tools/blob/main/examples/examples-audiokit/player-sdfat-audiokit/README.md
- * Make sure that the pins are set to off, on, on, off, off
- * @author Phil Schatzmann
- * @copyright GPLv3
- */
+//**********************************************************************************************************
+//*    audioI2S-- I2S audiodecoder for ESP32,  SdFat example                                                             *
+//**********************************************************************************************************
+//
+// first release on 05/2020
+// updated on Sep. 27, 2021
+/*
+ ⒈ install SdFat V2 from https://github.com/greiman/SdFat
+ ⒉ activate "SDFATFS_USED"                   in Audio.h
+ ⒊ activate "#define USE_UTF8_LONG_NAMES 1"  in SdFatConfig.h
+*/
 
-#define AUDIOKIT_BOARD 5
-#include "AudioTools.h"
-#include "AudioLibs/AudioKit.h"
-#include "AudioLibs/AudioSourceSdFat.h"
-#include "AudioCodecs/CodecMP3Helix.h"
+#include "Arduino.h"
+#include "Audio.h" 
+#include "SPI.h"
 
-const char *startFilePath="/";
-const char* ext="mp3";
-SdSpiConfig sdcfg(PIN_AUDIO_KIT_SD_CARD_CS, DEDICATED_SPI, SD_SCK_MHZ(10) , &AUDIOKIT_SD_SPI);
-AudioSourceSdFat source(startFilePath, ext, sdcfg);
-AudioKitStream kit;
-MP3DecoderHelix decoder;  // or change to MP3DecoderMAD
-AudioPlayer player(source, kit, decoder);
+// Digital I/O used
+#define SD_CS          5
+#define SPI_MOSI      23
+#define SPI_MISO      19
+#define SPI_SCK       18
+#define I2S_DOUT      25
+#define I2S_BCLK      27
+#define I2S_LRC       26
 
-void next(bool, int, void*) {
-   player.next();
-}
-
-void previous(bool, int, void*) {
-   player.previous();
-}
+Audio audio;
 
 void setup() {
-  Serial.begin(115200);
-  AudioLogger::instance().begin(Serial, AudioLogger::Info);
+    pinMode(SD_CS, OUTPUT);      digitalWrite(SD_CS, HIGH);
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+    SPI.setFrequency(1000000);
+    Serial.begin(115200);
+    SD.begin(SD_CS);
 
-  // setup output
-  auto cfg = kit.defaultConfig(TX_MODE);
-  kit.begin(cfg);
+    audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
+    audio.setVolume(12); // 0...21
 
- // setup additional buttons 
-  kit.addAction(PIN_KEY4, next);
-  kit.addAction(PIN_KEY3, previous);
-
-
-  // setup player
-  player.setVolume(0.7);
-  player.begin();
-
-  // select file with setPath() or setIndex()
-  //player.setPath("/ZZ Top/Unknown Album/Lowrider.mp3");
-  //player.setIndex(1); // 2nd file
-
+//    audio.connecttoFS(SD, "test.mp3");
+    audio.connecttoFS(SD, "test.mp3");
 }
 
-void loop() {
-  player.copy();
-  kit.processActions();
+void loop()
+{
+    audio.loop();
+}
+
+// optional
+void audio_info(const char *info){
+    Serial.print("info        "); Serial.println(info);
+}
+void audio_id3data(const char *info){  //id3 metadata
+    Serial.print("id3data     ");Serial.println(info);
+}
+void audio_eof_mp3(const char *info){  //end of file
+    Serial.print("eof_mp3     ");Serial.println(info);
 }
