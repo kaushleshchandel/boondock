@@ -42,7 +42,7 @@ void setup() {
 
 
   // setup player
-  player.setVolume(0.7);
+  player.setVolume(1.0);
   player.begin();
 
   // select file with setPath() or setIndex()
