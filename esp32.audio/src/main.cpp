@@ -2,6 +2,19 @@
  Example : Records and saves a file to SD card.
  Use a FAT32 formatted SD card. create folder named "inbox".
  Newly recorded audio files will get stored on the SD card.
+ 
+ TODO 
+ - Add all buttons and their functions
+ - Record on demand on button press.
+ - Record Audio and upload to the server
+ - SERVER SIDE - Accept audio files, save to database.
+ 
+
+ - Fix the Audio sampling rate
+ - Detect Mic & Speakers conencted
+
+ - Add MQTT commands
+
 */
 
 
