@@ -1,11 +1,20 @@
-#include "Arduino.h"
-#include "AudioKitHAL.h"
 
+#define USE_SDFAT
+#include "Arduino.h"
+//#include "AudioKitHAL.h"
 #include "SD.h"
+#include "AudioTools.h"
+#include "AudioLibs/AudioKit.h"
 
 AudioKit kit;
 File root;
 File myFile;
+
+uint16_t sample_rate = 16000;
+uint8_t channels = 1;  // The stream will have 1 channel
+
+const int BUFFER_SIZE = 1024;
+uint8_t buffer[BUFFER_SIZE];
 
 void printDirectory(File dir, int numTabs)
 {
@@ -34,6 +43,58 @@ void printDirectory(File dir, int numTabs)
   }
 }
 
+void printBuffer(int len)
+{
+  // by default we get int16_t values on 2 channels = 4 bytes per frame
+  int16_t *value_ptr = (int16_t *)buffer;
+  for (int j = 0; j < len / 4; j++)
+  {
+    Serial.print(*value_ptr++);
+    Serial.print(", ");
+    Serial.println(*value_ptr++);
+  }
+}
+
+void init_mic()
+{
+
+  // open in read mode
+  auto cfg = kit.defaultConfig(AudioInput);
+  cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
+  cfg.sample_rate = AUDIO_HAL_48K_SAMPLES;
+  kit.begin(cfg);
+}
+
+void capture_audio()
+{
+  String filename = "/inbox/audio" + String(random(999)) + ".wav";
+  Serial.println("Saving to " + filename);
+  myFile = SD.open(filename, FILE_WRITE);
+  WAVEncoder encoder(myFile);
+  encoder.begin();
+  Serial.println("Creating WAV file...");
+
+  for (int i; i < 1000; i++)
+  {
+    size_t len = kit.read(buffer, BUFFER_SIZE);
+   // Serial.println("Read bytes " + String(len));
+    if (myFile)
+    {
+      encoder.write(buffer, len);
+     // Serial.print("+");
+    }
+    else
+    {
+      Serial.println("error opening " + filename);
+      myFile.close();
+      Serial.println("Closed File");
+    }
+  }
+
+  myFile.close();
+  Serial.println("Closed File");
+}
+
 void setup()
 {
   Serial.begin(115200);
@@ -41,62 +102,34 @@ void setup()
   Serial.print("Initializing SD card...");
 
   if (!SD.begin(kit.pinSpiCs(), AUDIOKIT_SD_SPI))
-    {
-      Serial.println("initialization failed. Things to check:");
-      while (true)
-        ;
-    }
+  {
+    Serial.println("initialization failed. Things to check:");
+    while (true)
+      ;
+  }
 
   Serial.println("initialization done.");
 
-  root = SD.open("/");
-
+  root = SD.open("/inbox/");
   printDirectory(root, 0);
 
-//  Serial.println("done!");
-
-  
   Serial.print("Initializing SD card...");
 
-  if (!SD.begin(4)) {
+  if (!SD.begin(4))
+  {
     Serial.println("initialization failed!");
-    while (1);
+    while (1)
+      ;
   }
   Serial.println("initialization done.");
 
-  // open the file. note that only one file can be open at a time,
-  // so you have to close this one before opening another.
-  myFile = SD.open("/system/test.txt", FILE_WRITE);
-
-  // if the file opened okay, write to it:
-  if (myFile) {
-    Serial.print("Writing to test.txt...");
-    myFile.println("testing 1, 2, 3.");
-    // close the file:
-    myFile.close();
-    Serial.println("done.");
-  } else {
-    // if the file didn't open, print an error:
-    Serial.println("error opening test.txt");
-  }
-
-  // re-open the file for reading:
-  myFile = SD.open("/system/test.txt");
-  if (myFile) {
-    Serial.println("/system/test.txt:");
-
-    // read from the file until there's nothing else in it:
-    while (myFile.available()) {
-      Serial.write(myFile.read());
-    }
-    // close the file:
-    myFile.close();
-  } else {
-    // if the file didn't open, print an error:
-    Serial.println("error opening test.txt");
-  }
+  init_mic();
+  capture_audio();
 }
 
 void loop()
 {
+  // size_t len = kit.read(buffer, BUFFER_SIZE);
+  // printBuffer(len);
+  // capture_audio();
 }

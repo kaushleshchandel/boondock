@@ -1,12 +1,4 @@
-/**
- * @file input.ino
- * @author Phil Schatzmann
- * @brief Input of audio data from the AudioKit microphones
- * @date 2021-12-10
- *
- * @copyright Copyright (c) 2021
- *
- */
+
 #define USE_SDFAT
 #include "Arduino.h"
 //#include "AudioKitHAL.h"
@@ -17,6 +9,9 @@
 AudioKit kit;
 File root;
 File myFile;
+
+uint16_t sample_rate = 16000;
+uint8_t channels = 1;  // The stream will have 1 channel
 
 const int BUFFER_SIZE = 1024;
 uint8_t buffer[BUFFER_SIZE];
@@ -66,7 +61,7 @@ void init_mic()
   // open in read mode
   auto cfg = kit.defaultConfig(AudioInput);
   cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
-  cfg.sample_rate = AUDIO_HAL_08K_SAMPLES;
+  cfg.sample_rate = AUDIO_HAL_48K_SAMPLES;
   kit.begin(cfg);
 }
 
