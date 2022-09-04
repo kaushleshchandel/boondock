@@ -1,56 +1,140 @@
-//**********************************************************************************************************
-//*    audioI2S-- I2S audiodecoder for ESP32,  SdFat example                                                             *
-//**********************************************************************************************************
-//
-// first release on 05/2020
-// updated on Sep. 27, 2021
-/*
- ⒈ install SdFat V2 from https://github.com/greiman/SdFat
- ⒉ activate "SDFATFS_USED"                   in Audio.h
- ⒊ activate "#define USE_UTF8_LONG_NAMES 1"  in SdFatConfig.h
-*/
-
+/**
+ * @file input.ino
+ * @author Phil Schatzmann
+ * @brief Input of audio data from the AudioKit microphones
+ * @date 2021-12-10
+ *
+ * @copyright Copyright (c) 2021
+ *
+ */
+#define USE_SDFAT
 #include "Arduino.h"
-#include "Audio.h" 
-#include "SPI.h"
+//#include "AudioKitHAL.h"
+#include "SD.h"
+#include "AudioTools.h"
+#include "AudioLibs/AudioKit.h"
 
-// Digital I/O used
-#define SD_CS          5
-#define SPI_MOSI      23
-#define SPI_MISO      19
-#define SPI_SCK       18
-#define I2S_DOUT      25
-#define I2S_BCLK      27
-#define I2S_LRC       26
+AudioKit kit;
+File root;
+File myFile;
 
-Audio audio;
+const int BUFFER_SIZE = 1024;
+uint8_t buffer[BUFFER_SIZE];
 
-void setup() {
-    pinMode(SD_CS, OUTPUT);      digitalWrite(SD_CS, HIGH);
-    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
-    SPI.setFrequency(1000000);
-    Serial.begin(115200);
-    SD.begin(SD_CS);
+void printDirectory(File dir, int numTabs)
+{
+  while (true)
+  {
+    File entry = dir.openNextFile();
+    if (!entry)
+      break;
 
-    audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
-    audio.setVolume(12); // 0...21
+    for (uint8_t i = 0; i < numTabs; i++)
+      Serial.print('\t');
 
-//    audio.connecttoFS(SD, "test.mp3");
-    audio.connecttoFS(SD, "test.mp3");
+    Serial.print(entry.name());
+    if (entry.isDirectory())
+    {
+      Serial.println("/");
+      printDirectory(entry, numTabs + 1);
+    }
+    else
+    {
+      // files have sizes, directories do not
+      Serial.print("\t\t");
+      Serial.println(entry.size(), DEC);
+    }
+    entry.close();
+  }
+}
+
+void printBuffer(int len)
+{
+  // by default we get int16_t values on 2 channels = 4 bytes per frame
+  int16_t *value_ptr = (int16_t *)buffer;
+  for (int j = 0; j < len / 4; j++)
+  {
+    Serial.print(*value_ptr++);
+    Serial.print(", ");
+    Serial.println(*value_ptr++);
+  }
+}
+
+void init_mic()
+{
+
+  // open in read mode
+  auto cfg = kit.defaultConfig(AudioInput);
+  cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
+  cfg.sample_rate = AUDIO_HAL_08K_SAMPLES;
+  kit.begin(cfg);
+}
+
+void capture_audio()
+{
+  String filename = "/inbox/audio" + String(random(999)) + ".wav";
+  Serial.println("Saving to " + filename);
+  myFile = SD.open(filename, FILE_WRITE);
+  WAVEncoder encoder(myFile);
+  encoder.begin();
+  Serial.println("Creating WAV file...");
+
+  for (int i; i < 1000; i++)
+  {
+    size_t len = kit.read(buffer, BUFFER_SIZE);
+   // Serial.println("Read bytes " + String(len));
+    if (myFile)
+    {
+      encoder.write(buffer, len);
+     // Serial.print("+");
+    }
+    else
+    {
+      Serial.println("error opening " + filename);
+      myFile.close();
+      Serial.println("Closed File");
+    }
+  }
+
+  myFile.close();
+  Serial.println("Closed File");
+}
+
+void setup()
+{
+  Serial.begin(115200);
+
+  Serial.print("Initializing SD card...");
+
+  if (!SD.begin(kit.pinSpiCs(), AUDIOKIT_SD_SPI))
+  {
+    Serial.println("initialization failed. Things to check:");
+    while (true)
+      ;
+  }
+
+  Serial.println("initialization done.");
+
+  root = SD.open("/inbox/");
+  printDirectory(root, 0);
+
+  Serial.print("Initializing SD card...");
+
+  if (!SD.begin(4))
+  {
+    Serial.println("initialization failed!");
+    while (1)
+      ;
+  }
+  Serial.println("initialization done.");
+
+  init_mic();
+  capture_audio();
 }
 
 void loop()
 {
-    audio.loop();
-}
-
-// optional
-void audio_info(const char *info){
-    Serial.print("info        "); Serial.println(info);
-}
-void audio_id3data(const char *info){  //id3 metadata
-    Serial.print("id3data     ");Serial.println(info);
-}
-void audio_eof_mp3(const char *info){  //end of file
-    Serial.print("eof_mp3     ");Serial.println(info);
+  // size_t len = kit.read(buffer, BUFFER_SIZE);
+  // printBuffer(len);
+  // capture_audio();
 }
