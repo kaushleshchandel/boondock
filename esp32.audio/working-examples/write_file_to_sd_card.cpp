@@ -1,7 +1,12 @@
+/*
+ Example : Records and saves a file to SD card.
+ Use a FAT32 formatted SD card. create folder named "inbox".
+ Newly recorded audio files will get stored on the SD card.
+*/
+
 
 #define USE_SDFAT
 #include "Arduino.h"
-//#include "AudioKitHAL.h"
 #include "SD.h"
 #include "AudioTools.h"
 #include "AudioLibs/AudioKit.h"
@@ -15,6 +20,7 @@ uint8_t channels = 1;  // The stream will have 1 channel
 
 const int BUFFER_SIZE = 1024;
 uint8_t buffer[BUFFER_SIZE];
+
 
 void printDirectory(File dir, int numTabs)
 {
@@ -43,28 +49,25 @@ void printDirectory(File dir, int numTabs)
   }
 }
 
-void printBuffer(int len)
-{
-  // by default we get int16_t values on 2 channels = 4 bytes per frame
-  int16_t *value_ptr = (int16_t *)buffer;
-  for (int j = 0; j < len / 4; j++)
-  {
-    Serial.print(*value_ptr++);
-    Serial.print(", ");
-    Serial.println(*value_ptr++);
-  }
-}
-
+/*
+void init_mic()
+Initialize the Microphone
+Sampling rate must match the Wav Encoder
+*/
 void init_mic()
 {
-
-  // open in read mode
   auto cfg = kit.defaultConfig(AudioInput);
   cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
   cfg.sample_rate = AUDIO_HAL_48K_SAMPLES;
   kit.begin(cfg);
 }
 
+
+/*
+void capture_audio()
+Captures an Audio sample
+Sampling rate must match the Wav Encoder
+*/
 void capture_audio()
 {
   String filename = "/inbox/audio" + String(random(999)) + ".wav";
