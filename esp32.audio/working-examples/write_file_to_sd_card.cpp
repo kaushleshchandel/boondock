@@ -2,6 +2,19 @@
  Example : Records and saves a file to SD card.
  Use a FAT32 formatted SD card. create folder named "inbox".
  Newly recorded audio files will get stored on the SD card.
+ 
+ TODO 
+ - Add all buttons and their functions
+ - Record on demand on button press.
+ - Record Audio and upload to the server
+ - SERVER SIDE - Accept audio files, save to database.
+ 
+
+ - Fix the Audio sampling rate
+ - Detect Mic & Speakers conencted
+
+ - Add MQTT commands
+
 */
 
 
@@ -77,21 +90,22 @@ void capture_audio()
  // mywav.sample_rate = AUDIO_HAL_48K_SAMPLES;
  // mywav.bits_per_sample = AUDIO_HAL_BIT_LENGTH_16BITS;
 
-  String filename = "/inbox/audio" + String(random(999)) + ".wav";
+  String filename = "/inbox/audio_" +  String(random(99)) + "_" + String(random(999999)) + ".wav";
   Serial.println("Saving to " + filename);
   myFile = SD.open(filename, FILE_WRITE);
   WAVEncoder encoder(myFile);
   encoder.begin();
   Serial.println("Creating WAV file...");
 
-  for (int i; i < 1000; i++)
+  for (int i =0; i < 1000; i++)
   {
+  
     size_t len = kit.read(buffer, BUFFER_SIZE);
    // Serial.println("Read bytes " + String(len));
     if (myFile)
     {
       encoder.write(buffer, len);
-     // Serial.print("+");
+    //  Serial.print("+");
     }
     else
     {
@@ -134,12 +148,11 @@ void setup()
   Serial.println("initialization done.");
 
   init_mic();
-  capture_audio();
+ // capture_audio();
 }
 
 void loop()
 {
-  // size_t len = kit.read(buffer, BUFFER_SIZE);
-  // printBuffer(len);
-  // capture_audio();
+  capture_audio();
+  delay(60000);
 }
