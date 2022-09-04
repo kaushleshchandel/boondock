@@ -59,6 +59,7 @@ void init_mic()
   auto cfg = kit.defaultConfig(AudioInput);
   cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
   cfg.sample_rate = AUDIO_HAL_48K_SAMPLES;
+ // cfg.bitsPerSample = AUDIO_HAL_B
   kit.begin(cfg);
 }
 
@@ -70,6 +71,12 @@ Sampling rate must match the Wav Encoder
 */
 void capture_audio()
 {
+
+  WAVAudioInfo mywav = default_config;
+  
+ // mywav.sample_rate = AUDIO_HAL_48K_SAMPLES;
+ // mywav.bits_per_sample = AUDIO_HAL_BIT_LENGTH_16BITS;
+
   String filename = "/inbox/audio" + String(random(999)) + ".wav";
   Serial.println("Saving to " + filename);
   myFile = SD.open(filename, FILE_WRITE);
