@@ -293,6 +293,9 @@ bool init_SD()
 
 // measure basic properties of the input signal
 // determine if analog or digital, determine range and average.
+
+int MIN_SOUND = -10;
+
 bool MeasureAnalog()
 {
     uint16_t signalAvg = 0, signalMax = 0, signalMin = 1024, t0 = millis();
@@ -304,19 +307,40 @@ bool MeasureAnalog()
         signalAvg += k;
     }
     signalAvg /= BUFFER_SIZE;
-
-    if ((signalMax - 65530) < 0)
-    {
-        // Serial.println("Sound" + String(signalMax - 65530));
+    if ((signalMax - 65530) < MIN_SOUND)
         return true;
+    else
+        return false;
+
+}
+
+long silentSince = 0;
+#define SILENSE_THRESHOLD 1000
+
+// Check for Silence
+bool is_silent()
+{
+    if (MeasureAnalog())
+    {
+        silentSince = 0;
+        Serial.print("+");
+        return false;
     }
     else
     {
-        return false;
+        silentSince++;
+        if (silentSince > SILENSE_THRESHOLD)
+        {
+            Serial.print("-");
+            silentSince = 0;
+            return true;
+        }
+        else
+        {
+            Serial.print(".");
+            return false;
+        }
     }
-
-    // Serial.print(" Max: " + String(signalMax -65530 ));
-    // Serial.println("");
 }
 
 /*
@@ -327,7 +351,7 @@ Sampling rate must match the Wav Encoder
 void init_mic()
 {
     auto cfg = kit.defaultConfig(AudioInput);
-    cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE3; // microphone
+    cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
     cfg.sample_rate = AUDIO_HAL_48K_SAMPLES;
     // cfg.bitsPerSample = AUDIO_HAL_B
     kit.begin(cfg);
@@ -361,7 +385,6 @@ void capture_audio()
             r++;
     }
 
-
     WAVEncoder encoder(myFile);
     encoder.begin();
 
@@ -374,9 +397,9 @@ void capture_audio()
     {
         size_t len = kit.read(buffer, BUFFER_SIZE);
 
-        if (i > 1000)
+        if (i > 100)
         {
-            if (MeasureAnalog() == false)
+            if(is_silent() == true)
             {
                 Serial.println("No more sound");
                 myFile.close();
@@ -391,7 +414,7 @@ void capture_audio()
         }
         else
         {
-          //  Serial.println("error opening " + filename);
+            //  Serial.println("error opening " + filename);
             myFile.close();
             Serial.println("Closed File");
             current_state = STATE_SD_WRITE_ERROR;

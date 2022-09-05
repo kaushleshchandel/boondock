@@ -4,9 +4,19 @@
  Newly recorded audio files will get stored on the SD card.
 
  TODO
- - Led functions
- - Button Press commands to enable & disable recording
+
  - Upload audio to server
+ - Playback the Recorded messages
+ - ?? Can it Playback while checking for Audio in?
+ - Push to Record ( Sends audio to Server )
+ 
+ - Say the Status on button press
+ - Mirror the Audio in to Speaker out
+ - Button Press to switch the Microphone Input
+ 
+ 
+ - Cycle oldest Audio file
+ - Button Press to Clean up storage
  - Add all buttons and their functions.
  - Record on demand on button press.
  - SERVER SIDE - Accept audio files, save to database.
@@ -16,6 +26,7 @@
  - Detect Mic & Speakers conencted
 
  - Add MQTT commands
+ - Button Press commands to enable & disable recording
 
 */
 #include "commpn.h"
@@ -23,12 +34,6 @@
 void setup()
 {
   Serial.begin(115200);
-  pinMode(GPIO_NUM_19, OUTPUT);
-
-  digitalWrite(GPIO_NUM_19, HIGH); delay(100); digitalWrite(GPIO_NUM_19, LOW); delay(100);
-  digitalWrite(GPIO_NUM_19, HIGH); delay(100); digitalWrite(GPIO_NUM_19, LOW); delay(100);
-  digitalWrite(GPIO_NUM_19, HIGH); delay(100); digitalWrite(GPIO_NUM_19, LOW); delay(100);
-
  
   delay(500);
 
@@ -38,7 +43,7 @@ void setup()
   Serial.print("Initializing SD card...");
   init_SD();
   init_mic();
-  // capture_audio();
+ 
 }
 
 void loop()
@@ -58,5 +63,5 @@ void loop()
     current_state = STATE_RECORDING;
     capture_audio();
   }
-
+  //  delay(1);
 }
