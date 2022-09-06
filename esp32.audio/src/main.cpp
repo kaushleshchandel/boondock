@@ -5,6 +5,8 @@
 
  TODO
 
+ - Date time routine for time calculation
+ - Timer based Audio recording length
  - Upload audio to server
  - Playback the Recorded messages
  - ?? Can it Playback while checking for Audio in?
@@ -29,14 +31,26 @@
  - Button Press commands to enable & disable recording
 
 */
-#include "commpn.h"
+#include "common.h"
 
 void setup()
 {
   Serial.begin(115200);
- 
-  delay(500);
 
+    //connect to WiFi
+  Serial.printf("Connecting to %s ", ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+  }
+  Serial.println(" CONNECTED");
+  
+  //init and get the time
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  printLocalTime();
+
+ 
   //root = SD.open("/inbox/");
   //printDirectory(root, 0);
 
@@ -56,12 +70,14 @@ void loop()
 
   current_state = STATE_LISTENING;
 
-  size_t len = kit.read(buffer, BUFFER_SIZE);
-  if (MeasureAnalog())
+  size_t len = kit.read(buffer, SAMPLING_BUFFER_SIZE);
+  if (measure_sound(true))
   {
     Serial.println("Audio detected");
     current_state = STATE_RECORDING;
+    // printLocalTime();
     capture_audio();
+    delay(100);
   }
-  //  delay(1);
+   // delay(500);
 }
