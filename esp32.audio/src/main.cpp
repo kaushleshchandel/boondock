@@ -4,9 +4,6 @@
  Newly recorded audio files will get stored on the SD card.
 
  TODO
-
- - Date time routine for time calculation
- - Timer based Audio recording length
  - Upload audio to server
  - Playback the Recorded messages
  - ?? Can it Playback while checking for Audio in?
