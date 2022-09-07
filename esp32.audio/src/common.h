@@ -28,8 +28,8 @@ int current_state = 0;
 #include "time.h"
  
 
-const char *ssid = "AAA";
-const char *password = "608980608980";
+const char *ssid = "XXX";
+const char *password = "XXXXXXXX";
 String serverName = "10.0.2.68"; // OR REPLACE WITH YOUR DOMAIN NAME
 
 #define PART_BOUNDARY "123456789000000000000987654321"
