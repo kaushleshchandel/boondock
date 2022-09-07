@@ -357,7 +357,7 @@ void init_mic()
     auto cfg = kit.defaultConfig(AudioInput);
     cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
     cfg.sample_rate = AUDIO_HAL_08K_SAMPLES;
-    
+    cfg.bits_per_sample = AUDIO_HAL_BIT_LENGTH_16BITS;
     //  cfg.bits_per_sample
     // cfg.bitsPerSample = AUDIO_HAL_B
     kit.begin(cfg);
