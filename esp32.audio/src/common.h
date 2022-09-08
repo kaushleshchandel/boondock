@@ -29,11 +29,10 @@ int current_state = 0;
 #include <WiFi.h>
 #include "time.h"
 
-#include "AudioLibs/AudioSourceSdFat.h"
-#include "AudioCodecs/CodecMP3Helix.h"
-
 
 String serverName = "events.bluevan.io"; // OR REPLACE WITH YOUR DOMAIN NAME
+=======
+
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 
