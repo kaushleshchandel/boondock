@@ -173,35 +173,35 @@ void init_filesystem(fs::FS &fs)
     // Cleaning up first
     if (fs.exists("/inbox") == true)
     {
-        Serial.println("Removing inbox Directory");
+   //     Serial.println("Removing inbox Directory");
         removeDir(fs, "/inbox");
     }
 
     if (fs.exists("/logs") == true)
     {
-        Serial.println("Removing logs Directory");
+    //    Serial.println("Removing logs Directory");
         removeDir(fs, "/logs");
     }
     if (fs.exists("/system") == true)
     {
-        Serial.println("Removing system Directory");
+    //    Serial.println("Removing system Directory");
         removeDir(fs, "/system");
     }
 
     if (SD.exists("/inbox") == false)
     {
-        Serial.println("Creating Inbox Directory");
+      //  Serial.println("Creating Inbox Directory");
         createDir(fs, "/inbox");
     }
 
     if (fs.exists("/system") == false)
     {
-        Serial.println("Create System Directory");
+       // Serial.println("Create System Directory");
         createDir(fs, "/system");
     }
     if (fs.exists("/logs") == false)
     {
-        Serial.println("Create Logs Directory");
+      //  Serial.println("Create Logs Directory");
         createDir(fs, "/logs");
     }
 

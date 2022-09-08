@@ -1,67 +1,52 @@
 /*
- Example : Records and saves a file to SD card.
- Use a FAT32 formatted SD card. create folder named "inbox".
- Newly recorded audio files will get stored on the SD card.
-
- TODO
- - Upload audio to server
- - Playback the Recorded messages
- - ?? Can it Playback while checking for Audio in?
- - Push to Record ( Sends audio to Server )
- 
- - Say the Status on button press
- - Mirror the Audio in to Speaker out
- - Button Press to switch the Microphone Input
- 
- 
- - Cycle oldest Audio file
- - Button Press to Clean up storage
- - Add all buttons and their functions.
- - Record on demand on button press.
- - SERVER SIDE - Accept audio files, save to database.
-
-
- - Fix the Audio sampling rate
- - Detect Mic & Speakers conencted
-
- - Add MQTT commands
- - Button Press commands to enable & disable recording
+Reads Microphone or Line in and upoads it to the server
 
 */
+
 #include "common.h"
 
+String ssid = "AAA";              // Change with your Wifi Router
+String password = "608980608980"; // Your wifi Router Password
+
+/******************************
+setup()
+Setup the hardware
+*******************************/
 void setup()
 {
   Serial.begin(115200);
 
-    //connect to WiFi
-  Serial.printf("Connecting to %s ", ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-      Serial.print(".");
-  }
-  Serial.println(" CONNECTED");
-  
-  //init and get the time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  printLocalTime();
+  Serial.println("Connecting to wifi...");
+  connect_wifi(ssid, password);
 
- 
-  //root = SD.open("/inbox/");
-  //printDirectory(root, 0);
+  // init and get the time
+  // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 
-  Serial.print("Initializing SD card...");
+  Serial.println("Initializing SD card...");
   init_SD();
+  Serial.println("Initializing Mic...");
   init_mic();
- 
 }
 
+/******************************
+setup()
+Setup the hardware
+*******************************/
 void loop()
 {
-  if(current_state == STATE_SD_WRITE_ERROR)
+  if (current_state == STATE_SD_WRITE_ERROR)
   {
     Serial.print("Disk Write Error");
+    esp_restart();
+  }
+  else if (current_state == STATE_SD_WRITE_ERROR)
+  {
+    Serial.print("Disk Read Error");
+    esp_restart();
+  }
+  else if (current_state == STATE_SD_WRITE_ERROR)
+  {
+    Serial.print("Audio file upload Error");
     esp_restart();
   }
 
@@ -70,11 +55,23 @@ void loop()
   size_t len = kit.read(buffer, SAMPLING_BUFFER_SIZE);
   if (measure_sound(true))
   {
-    Serial.println("Audio detected");
+    // Serial.println("Audio detected");
+    Serial.print("+");
     current_state = STATE_RECORDING;
     // printLocalTime();
-    capture_audio();
-    delay(100);
+    String fname = capture_audio();
+    if (fname == "Error")
+    {
+      Serial.print(" Capture Error ");
+    }
+    else
+    {
+      current_state = STATE_SENDING;
+      Serial.print("+");
+      if (upload_file_to_server(fname))
+        Serial.println("OK");
+      else
+        Serial.println(" File Send Error ");
+    }
   }
-   // delay(500);
 }
