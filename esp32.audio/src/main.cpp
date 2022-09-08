@@ -5,8 +5,8 @@ Reads Microphone or Line in and upoads it to the server
 
 #include "common.h"
 
-String ssid = "AAA";              // Change with your Wifi Router
-String password = "608980608980"; // Your wifi Router Password
+String ssid = "XXX";              // Change with your Wifi Router
+String password = "XXXXXXXX"; // Your wifi Router Password
 
 /******************************
 setup()
