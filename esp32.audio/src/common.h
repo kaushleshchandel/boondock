@@ -7,6 +7,8 @@
 #define STATE_RECORDING 2
 #define STATE_SENDING 3
 #define STATE_SD_WRITE_ERROR 4
+#define STATE_FILE_READ_ERROR 5
+#define STATE_FILE_SEND_ERROR 6
 
 #define MAX_FILE_DURATION 60
 #define SILENSE_THRESHOLD 3000 // in MilliSeconds
@@ -26,11 +28,11 @@ int current_state = 0;
 #include "data.h"
 #include <WiFi.h>
 #include "time.h"
- 
 
-const char *ssid = "XXX";
-const char *password = "XXXXXXXX";
-String serverName = "10.0.2.68"; // OR REPLACE WITH YOUR DOMAIN NAME
+
+String serverName = "events.bluevan.io"; // OR REPLACE WITH YOUR DOMAIN NAME
+=======
+
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 
@@ -61,7 +63,7 @@ uint16_t buffer[RECORDING_BUFFER_SIZE];
 connectWiFi()
 Connects to WiFi
 *******************************/
-void connect_wifi()
+void connect_wifi(String ssid, String password)
 {
 
     WiFi.mode(WIFI_STA);
@@ -69,14 +71,14 @@ void connect_wifi()
     Serial.print("Connecting to ");
     Serial.println(ssid);
 
-    WiFi.begin(ssid, password);
+    WiFi.begin(ssid.c_str(), password.c_str());
     while (WiFi.status() != WL_CONNECTED)
     {
         Serial.print(".");
         delay(500);
     }
     Serial.println();
-    Serial.print("ESP32-CAM IP Address: ");
+    Serial.print("Bondock IP Address: ");
     Serial.println(WiFi.localIP());
 }
 
@@ -104,10 +106,10 @@ String formatBytes(unsigned int bytes)
 upload_file_to_server()
 Upload file to the Server
 *******************************/
-void upload_file_to_server(String filename)
+bool upload_file_to_server(String filename)
 {
     // Intialize Wifi
-
+    bool res = true;
     String getAll;
     String getBody;
 
@@ -118,45 +120,45 @@ void upload_file_to_server(String filename)
     String fileName = myFile.name();
     String fileSize = formatBytes(myFile.size());
 
-    Serial.println();
-    Serial.println("file exists");
+   // Serial.println();
+   // Serial.println("file exists");
 
     String myMac = WiFi.macAddress();
     myMac.replace(":", "");
 
     if (myFile)
     {
-        Serial.println("test file:ok");
+     //   Serial.println("test file:ok");
         // print content length and host
-        Serial.print("contentLength : ");
-        Serial.println(fileSize);
-        Serial.print("connecting to ");
-        Serial.println("events.bluevan.io");
+      //  Serial.print("contentLength : ");
+      //  Serial.println(fileSize);
+      //  Serial.print("connecting to ");
+      //  Serial.println("events.bluevan.io");
 
         // We now create a URI for the request
-        Serial.println("Connected to server");
-        Serial.print("Requesting URL: ");
-        Serial.println("/boondock/upload.php");
+      //  Serial.println("Connected to server");
+      //  Serial.print("Requesting URL: ");
+      //  Serial.println("/boondock/upload.php");
 
         // Make a HTTP request and add HTTP headers
         // String boundary = "CustomizBoundarye----";
         // change with your content type
         String contentType = "audio/x-wav";
         String portString = String("80");
-        String hostString = String("events.bluevan.io");
+        String hostString = String(serverName);
 
-        String requestHead = "--RandomNerdTutorials\r\nContent-Disposition: form-data; name=\"audioFile\"; filename=\"" + myMac + "\"\r\nContent-Type: audio/x-wav\r\n\r\n";
+        String requestHead = "--BoonDock\r\nContent-Disposition: form-data; name=\"audioFile\"; filename=\"" + myMac + "\"\r\nContent-Type: audio/x-wav\r\n\r\n";
 
-        String tail = "\r\n--RandomNerdTutorials--\r\n";
+        String tail = "\r\n--BoonDock--\r\n";
 
         int contentLength = requestHead.length() + myFile.size() + tail.length();
 
-        client.connect("events.bluevan.io", 80);
+        client.connect(serverName.c_str(), 80);
 
         client.println("POST /boondock/upload.php HTTP/1.1");
-        client.println("Host: events.bluevan.io");
+        client.println("Host: " + serverName);
         client.println("Content-Length: " + String(contentLength, DEC));
-        client.println("Content-Type: multipart/form-data; boundary=RandomNerdTutorials");
+        client.println("Content-Type: multipart/form-data; boundary=BoonDock");
         client.println();
         client.print(requestHead);
 
@@ -186,24 +188,20 @@ void upload_file_to_server(String filename)
         {
             client.write((const uint8_t *)clientBuf, clientCount);
         }
-
-        // send tail
-        //      char charBuf3[tail.length() + 1];
-        //      tail.toCharArray(charBuf3, tail.length() + 1);
         client.print(tail);
-
-        // Serial.print(charBuf3);
     }
     else
     {
         // if the file didn't open, print an error:
         Serial.println("error opening test.WAV");
         Serial.println("Post Failure");
+       current_state  = STATE_FILE_READ_ERROR;
+        res = false;
     }
 
     // Read all the lines of the reply from server and print them to Serial
 
-    Serial.println("request sent");
+  //  Serial.println("request sent");
     String responseHeaders = "";
 
     int timoutTimer = 10000;
@@ -240,12 +238,14 @@ void upload_file_to_server(String filename)
             break;
         }
     }
-    Serial.println();
+  //  Serial.println();
     client.stop();
-    Serial.println(getBody);
+   // Serial.println(getBody);
 
     // close file
     myFile.close();
+
+    return res;
 }
 
 // Time function
@@ -292,7 +292,7 @@ bool init_SD()
             uint64_t cardSize = SD.cardSize() / (1024 * 1024);
             Serial.printf("SD_MMC Card Size: %lluMB\n", cardSize);
             Serial.println("initialization done.");
-            init_filesystem(SD);
+            //init_filesystem(SD);
             res = true;
             break;
         }
@@ -333,7 +333,7 @@ bool measure_sound(bool sample = false)
 // Check for Silence
 bool is_silent()
 {
-    Serial.print(">");
+  //  Serial.print(">");
     long currentMillis = millis();
 
     if (measure_sound(false))
@@ -354,12 +354,12 @@ Sampling rate must match the Wav Encoder
 */
 void init_mic()
 {
-    auto cfg = kit.defaultConfig(AudioInput);
+    auto cfg = kit.defaultConfig(AudioInputOutput);
     cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
     cfg.sample_rate = AUDIO_HAL_08K_SAMPLES;
     cfg.bits_per_sample = AUDIO_HAL_BIT_LENGTH_16BITS;
-    //  cfg.bits_per_sample
-    // cfg.bitsPerSample = AUDIO_HAL_B
+    
+   // cfg.sample_rate = AUDIO_HAL_22K_SAMPLES;
     kit.begin(cfg);
 }
 
@@ -368,7 +368,7 @@ void capture_audio()
 Captures an Audio sample
 Sampling rate must match the Wav Encoder
 */
-void capture_audio()
+String capture_audio()
 {
     silentSince = millis();
     unsigned long StartTime = millis(); // Startime for the File
@@ -382,7 +382,7 @@ void capture_audio()
     while (r < 5)
     {
         filename = fileLocation + "a_" + String(random(99)) + "_" + String(random(999999)) + ".wav";
-        Serial.println("Opening file for read write : " + filename);
+  //      Serial.println("Opening file for read write : " + filename);
         myFile = SD.open(filename, FILE_WRITE);
         if (myFile)
         {
@@ -398,7 +398,7 @@ void capture_audio()
 
     if (file_created)
     {
-        Serial.println("Saving to WAV file...");
+     //   Serial.println("Saving to WAV file...");
     }
 
     unsigned long CurrentTime = millis();
@@ -410,15 +410,16 @@ void capture_audio()
 
         if (ElapsedTimeinSeconds > MAX_FILE_DURATION)
         {
-            Serial.println("Closing file by Duration");
+           // Serial.println("Closing file by Duration");
             myFile.close();
             break;
         }
         size_t len = kit.read(buffer, RECORDING_BUFFER_SIZE);
+       // kit.write(buffer, len); Can Playback audio on speaker
 
         if (is_silent() == true)
         {
-            Serial.println("Closing file due to silence");
+           // Serial.println("Closing file due to silence");
             myFile.close();
             break;
         }
@@ -433,7 +434,7 @@ void capture_audio()
         {
             //  Serial.println("error opening " + filename);
             myFile.close();
-            Serial.println("Closing file due to error");
+          //  Serial.println("Closing file due to error");
             current_state = STATE_SD_WRITE_ERROR;
             break;
         }
@@ -442,11 +443,13 @@ void capture_audio()
     if (myFile)
     {
         myFile.close();
-        Serial.println("Closing file by max buffers");
+       // Serial.println("Closing file by max buffers");
     }
     CurrentTime = millis(); // Get Current Time
 
-    upload_file_to_server(filename);
+   
+    return filename;
+
 }
 
 #endif
