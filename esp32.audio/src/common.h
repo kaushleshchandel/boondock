@@ -28,11 +28,10 @@ int current_state = 0;
 #include "data.h"
 #include <WiFi.h>
 #include "time.h"
-
+ 
 
 String serverName = "events.bluevan.io"; // OR REPLACE WITH YOUR DOMAIN NAME
-=======
-
+ 
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 
@@ -81,26 +80,7 @@ void connect_wifi(String ssid, String password)
     Serial.print("Bondock IP Address: ");
     Serial.println(WiFi.localIP());
 }
-
-/******************************
-formatBytes()
-Format Bytes for sending
-*******************************/
-String formatBytes(unsigned int bytes)
-{
-    if (bytes < 1024)
-    {
-        return String(bytes) + "B";
-    }
-    else if (bytes < (1024 * 1024))
-    {
-        return String(bytes / 1024.0) + "KB";
-    }
-    else if (bytes < (1024 * 1024 * 1024))
-    {
-        return String(bytes / 1024.0 / 1024.0) + "MB";
-    }
-}
+ 
 
 /******************************
 upload_file_to_server()
@@ -118,7 +98,7 @@ bool upload_file_to_server(String filename)
     myFile = SD.open(filename, FILE_READ);
 
     String fileName = myFile.name();
-    String fileSize = formatBytes(myFile.size());
+  //  String fileSize = formatBytes(myFile.size());
 
    // Serial.println();
    // Serial.println("file exists");
