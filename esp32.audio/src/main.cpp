@@ -3,10 +3,30 @@ Reads Microphone or Line in and upoads it to the server
 
 */
 
-#include "common.h"
+#include "Arduino.h"
 
-String ssid = "XXX";              // Change with your Wifi Router
-String password = "XXXXXXXX"; // Your wifi Router Password
+String ssid = "XXX";             // Change with your Wifi Router
+String password = "XXXXXXXX";   // Your wifi Router Password
+
+
+/**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
+#define INPUT_LINE AUDIO_HAL_ADC_INPUT_LINE2  //Uses Mic & Line input
+#define AUDIO_ON_SPEAKER true                 //Liste Audio on the speaker?
+#define SILENSE_BEFORE_RECORDING_STOPS 3000   // How long is it silent before recording stops
+#define MAX_RECORDING_DURATION 60             //Maximum recording file duration
+#define MIN_SOUND 50                          //How much sound before recording starts Range 0 to 100;
+#define DEBUG false                            // Set to true when you want to see all the useless messages scrolling on serial port
+/**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
+
+
+/**************** THESE ARE IMPORTANT BUT MESS WITH THESE WHEN U R SURE *********/
+#define MAX_AUDIO_BUFFER 10000      //Maximum bufferes processed before recording is stopped
+#define SAMPLING_BUFFER_SIZE 64     //Buffer samples taken to listen for sound activity
+#define RECORDING_BUFFER_SIZE 1024  //Buffer samples used to save the audio file
+/**************** THESE ARE IMPORTANT BUT MESS WITH THESE WHEN U R SURE *********/
+
+
+#include "common.h" //Common.h file holds all the reference and functions
 
 /******************************
 setup()

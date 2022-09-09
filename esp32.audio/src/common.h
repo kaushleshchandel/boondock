@@ -10,13 +10,6 @@
 #define STATE_FILE_READ_ERROR 5
 #define STATE_FILE_SEND_ERROR 6
 
-#define MAX_FILE_DURATION 60
-#define SILENSE_THRESHOLD 3000 // in MilliSeconds
-#define MAX_AUDIO_BUFFER 10000
-#define MIN_SOUND 50 // Range 0 to 100
-
-#define SAMPLING_BUFFER_SIZE 64
-#define RECORDING_BUFFER_SIZE 1024
 
 int current_state = 0;
 
@@ -30,12 +23,9 @@ int current_state = 0;
 #include "time.h"
  
 
-String serverName = "events.bluevan.io"; // OR REPLACE WITH YOUR DOMAIN NAME
- 
-
-#define PART_BOUNDARY "123456789000000000000987654321"
-
+String serverName = "events.bluevan.io"; // Or replace with your own domain
 String serverPath = "/upload.php"; // The default serverPath should be upload.php
+String fileLocation = "/inbox/"; //Location on SD card where files are saved
 
 const int serverPort = 80;
 
@@ -44,10 +34,8 @@ WiFiClient client;
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
-
 long silentSince = 0;
 
-String fileLocation = "/inbox/";
 
 AudioKit kit;
 File root;
@@ -321,7 +309,7 @@ bool is_silent()
         silentSince = millis();
         return false;
     }
-    else if ((currentMillis - silentSince) > SILENSE_THRESHOLD)
+    else if ((currentMillis - silentSince) > SILENSE_BEFORE_RECORDING_STOPS)
         return true;
     else
         return false;
@@ -335,7 +323,7 @@ Sampling rate must match the Wav Encoder
 void init_mic()
 {
     auto cfg = kit.defaultConfig(AudioInputOutput);
-    cfg.adc_input = AUDIO_HAL_ADC_INPUT_LINE2; // microphone
+    cfg.adc_input = INPUT_LINE; // microphone
     cfg.sample_rate = AUDIO_HAL_08K_SAMPLES;
     cfg.bits_per_sample = AUDIO_HAL_BIT_LENGTH_16BITS;
     
@@ -388,14 +376,15 @@ String capture_audio()
     {
         ElapsedTimeinSeconds = (CurrentTime - StartTime) / 1000;
 
-        if (ElapsedTimeinSeconds > MAX_FILE_DURATION)
+        if (ElapsedTimeinSeconds > MAX_RECORDING_DURATION)
         {
            // Serial.println("Closing file by Duration");
             myFile.close();
             break;
         }
         size_t len = kit.read(buffer, RECORDING_BUFFER_SIZE);
-       // kit.write(buffer, len); Can Playback audio on speaker
+        if(AUDIO_ON_SPEAKER)
+             kit.write(buffer, len);
 
         if (is_silent() == true)
         {
