@@ -5,10 +5,9 @@ Reads Microphone or Line in and upoads it to the server
 
 #include "Arduino.h"
 
-String ssid = "XXX";             // Change with your Wifi Router
-String password = "XXXXXXXX";   // Your wifi Router Password
+String ssid = "AAA";             // Change with your Wifi Router
+String password = "608980608980";   // Your wifi Router Password
 
-//KC Added a comment
 
 /**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
 #define INPUT_LINE AUDIO_HAL_ADC_INPUT_LINE2  // Uses Mic & Line input
@@ -16,7 +15,7 @@ String password = "XXXXXXXX";   // Your wifi Router Password
 #define SILENSE_BEFORE_RECORDING_STOPS 3000   // How long is it silent before recording stops; in milliseconds
 #define MAX_RECORDING_DURATION 60             // Maximum recording file duration; in seconds
 #define MIN_SOUND 50                          // How much sound before recording starts Range 0 to 100;
-#define DEBUG false                           // Set to true when you want to see all the useless messages scrolling on serial port
+#define DEBUG true                           // Set to true when you want to see all the useless messages scrolling on serial port
 /**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
 
 
