@@ -23,6 +23,7 @@ int current_state = 0;
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "config.h"
+#include <HTTPClient.h>
 
 RTC_DATA_ATTR int errorCount = 0;
 RTC_DATA_ATTR int readCount = 0;
@@ -52,17 +53,38 @@ uint8_t channels = 1; // The stream will have 1 channel
 
 uint16_t buffer[RECORDING_BUFFER_SIZE];
 
-
 void play(WAVDecoder &decoder, StreamCopy &copier)
 {
     while (decoder)
         copier.copy();
-   
 }
 
 void audio_player(String URL)
 {
+    HTTPClient http;
 
+    int httpCode = http.begin(URL.c_str()); // Specify the URL
+
+     Serial.println("Saving" + URL);
+
+    myFile = SD.open("/test.wav", FILE_WRITE);
+
+    if (httpCode > 0) // Check for the returning code
+    {
+        http.writeToStream(&myFile);
+    }
+    else
+    {
+        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+
+     myFile.close();
+     Serial.println("Done!");
+}
+
+
+void player(String URL)
+{
 
     URLStream url("AAA", "608980608980");
     I2SStream i2s;                        // I2S stream
@@ -72,7 +94,7 @@ void audio_player(String URL)
 
     // setup i2s
     auto config = i2s.defaultConfig(TX_MODE);
-    config.sample_rate = 16000;
+    config.sample_rate = 32000;
     config.bits_per_sample = 32;
     config.channels = 1;
     i2s.begin(config);
@@ -162,7 +184,7 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
     {
         if (DEBUG)
             Serial.print("Play the Audio");
-            audio_player(messageTemp);
+        audio_player(messageTemp);
     }
 
     else if (cmd == "setDefaults" || cmd == "factoryreset")
@@ -504,7 +526,7 @@ bool init_SD()
 
 // measure basic properties of the input signal
 // Return if there is Sound
-bool measure_sound(bool sample = false)
+bool measure_sound(int buflen, bool sample = false)
 {
     int16_t signalMax = 0, signalMin = 1024, signalTotal = 0;
     int soundMeasure = 0;
@@ -515,7 +537,7 @@ bool measure_sound(bool sample = false)
     else
         buffer_Size = RECORDING_BUFFER_SIZE;
 
-    for (int i = 0; i < buffer_Size; i++)
+    for (int i = 0; i < buflen; i++)
     {
         int16_t k = buffer[i];
         signalMin = min(signalMin, k);
@@ -569,7 +591,7 @@ void capture_audio()
 Captures an Audio sample
 Sampling rate must match the Wav Encoder
 */
-String capture_audio()
+String capture_audio(int buflen)
 {
     silentSince = millis();
     unsigned long StartTime = millis(); // Startime for the File
@@ -601,6 +623,7 @@ String capture_audio()
     {
         //   Serial.println("Saving to WAV file...");
     }
+
 
     unsigned long CurrentTime = millis();
     unsigned long ElapsedTimeinSeconds = CurrentTime - StartTime;
@@ -657,7 +680,5 @@ String capture_audio()
 }
 
 // UrlStream -copy-> EncodedAudioStream -> I2S
-
-
 
 #endif
