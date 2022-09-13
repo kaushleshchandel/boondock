@@ -34,9 +34,9 @@ String fileLocation = "/inbox/";         // Location on SD card where files are 
 
 const char *mqtt_server = "3.137.29.71";
 
-const char *mqttUser = "blueman";
-const char *mqttPassword = "TYgu6fPhoofJ";
-const char *mqttClientID = "ESP32Cam3mp";
+const char *mqttUser = "XXXXX";
+const char *mqttPassword = "XXXXXX";
+const char *mqttClientID = "ESP32BoonDock";
 const char *DEFAULT_SUB_TOPIC = "";
 
 WiFiClient wifiClient;
