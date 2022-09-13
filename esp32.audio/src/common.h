@@ -22,21 +22,13 @@ int current_state = 0;
 #include "time.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include "config.h"
 
 RTC_DATA_ATTR int errorCount = 0;
 RTC_DATA_ATTR int readCount = 0;
 RTC_DATA_ATTR int sentCount = 0;
 RTC_DATA_ATTR int bootCount = 0;
 
-String serverName = "app.boondock.live"; // Or replace with your own domain
-String serverPath = "/upload.php";       // The default serverPath should be upload.php
-String fileLocation = "/inbox/";         // Location on SD card where files are saved
-
-const char *mqtt_server = "3.137.29.71";
-
-const char *mqttUser = "XXXXX";
-const char *mqttPassword = "XXXXXX";
-const char *mqttClientID = "ESP32BoonDock";
 const char *DEFAULT_SUB_TOPIC = "";
 
 WiFiClient wifiClient;
