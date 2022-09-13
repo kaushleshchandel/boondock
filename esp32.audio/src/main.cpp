@@ -8,7 +8,6 @@ Reads Microphone or Line in and upoads it to the server
 String ssid = "XXX";             // Change with your Wifi Router
 String password = "XXXXXXXX";   // Your wifi Router Password
 
-//KC Added a comment
 
 /**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
 #define INPUT_LINE AUDIO_HAL_ADC_INPUT_LINE2  // Uses Mic & Line input
