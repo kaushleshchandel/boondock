@@ -52,6 +52,38 @@ uint8_t channels = 1; // The stream will have 1 channel
 
 uint16_t buffer[RECORDING_BUFFER_SIZE];
 
+
+void play(WAVDecoder &decoder, StreamCopy &copier)
+{
+    while (decoder)
+        copier.copy();
+   
+}
+
+void audio_player(String URL)
+{
+
+
+    URLStream url("AAA", "608980608980");
+    I2SStream i2s;                        // I2S stream
+    WAVDecoder decoder(i2s);              // decode wav to pcm and send it to I2S
+    EncodedAudioStream out(i2s, decoder); // Decoder stream
+    StreamCopy copier(out, url);          // copy in to out
+
+    // setup i2s
+    auto config = i2s.defaultConfig(TX_MODE);
+    config.sample_rate = 16000;
+    config.bits_per_sample = 32;
+    config.channels = 1;
+    i2s.begin(config);
+
+    // rhasspy
+    url.begin(URL.c_str(), "audio/wav", GET);
+    play(decoder, copier);
+
+    url.end();
+}
+
 String get_beacon_id()
 {
     String bid = WiFi.macAddress();
@@ -130,6 +162,7 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
     {
         if (DEBUG)
             Serial.print("Play the Audio");
+            audio_player(messageTemp);
     }
 
     else if (cmd == "setDefaults" || cmd == "factoryreset")
@@ -622,5 +655,9 @@ String capture_audio()
 
     return filename;
 }
+
+// UrlStream -copy-> EncodedAudioStream -> I2S
+
+
 
 #endif
