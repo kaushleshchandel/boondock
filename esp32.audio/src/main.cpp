@@ -5,8 +5,8 @@ Reads Microphone or Line in and upoads it to the server
 
 #include "Arduino.h"
 
-String ssid = "XXX";             // Change with your Wifi Router
-String password = "XXXXXXXXXX";   // Your wifi Router Password
+String ssid = "AAA";             // Change with your Wifi Router
+String password = "608980608980";   // Your wifi Router Password
 
 
 /**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
@@ -44,6 +44,7 @@ void setup()
 
   Serial.println("Connecting to wifi...");
   connect_wifi(ssid, password);
+  mqtt_reconnect();
 
   // init and get the time
   // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -52,6 +53,7 @@ void setup()
   init_SD();
   Serial.println("Initializing Mic...");
   init_mic();
+  mqtt_send_error("Hello");
 }
 
 /******************************
@@ -100,4 +102,6 @@ void loop()
         Serial.println(" File Send Error ");
     }
   }
+
+  mqttClient.loop();
 }
