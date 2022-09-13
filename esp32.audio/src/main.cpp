@@ -5,10 +5,6 @@ Reads Microphone or Line in and upoads it to the server
 
 #include "Arduino.h"
 
-String ssid = "XXX";             // Change with your Wifi Router
-String password = "XXXXXXXXXX";   // Your wifi Router Password
-
-
 /**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
 #define INPUT_LINE AUDIO_HAL_ADC_INPUT_LINE2  // Uses Mic & Line input
 #define AUDIO_ON_SPEAKER false                 // Play Audio on the speaker?
@@ -44,6 +40,7 @@ void setup()
 
   Serial.println("Connecting to wifi...");
   connect_wifi(ssid, password);
+  mqtt_reconnect();
 
   // init and get the time
   // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -52,6 +49,7 @@ void setup()
   init_SD();
   Serial.println("Initializing Mic...");
   init_mic();
+  mqtt_send_error("Hello");
 }
 
 /******************************
@@ -100,4 +98,6 @@ void loop()
         Serial.println(" File Send Error ");
     }
   }
+
+  mqttClient.loop();
 }

@@ -20,10 +20,19 @@ int current_state = 0;
 #include "data.h"
 #include <WiFi.h>
 #include "time.h"
+#include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include "config.h"
 
-String serverName = "app.boondock.live"; // Or replace with your own domain
-String serverPath = "/upload.php";       // The default serverPath should be upload.php
-String fileLocation = "/inbox/";         // Location on SD card where files are saved
+RTC_DATA_ATTR int errorCount = 0;
+RTC_DATA_ATTR int readCount = 0;
+RTC_DATA_ATTR int sentCount = 0;
+RTC_DATA_ATTR int bootCount = 0;
+
+const char *DEFAULT_SUB_TOPIC = "";
+
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
 
 const int serverPort = 80;
 
@@ -42,6 +51,171 @@ uint16_t sample_rate = 16000;
 uint8_t channels = 1; // The stream will have 1 channel
 
 uint16_t buffer[RECORDING_BUFFER_SIZE];
+
+String get_beacon_id()
+{
+    String bid = WiFi.macAddress();
+    bid.replace(":", "");
+    return bid;
+}
+
+String getFullTopic(String topic)
+{
+    String t = get_beacon_id();
+    t = t + "/" + topic;
+    return t;
+}
+
+void mqtt_callback(char *topic, byte *message, unsigned int length)
+{
+    if (DEBUG)
+    {
+        Serial.print("Message arrived on topic: ");
+        Serial.print(topic);
+        Serial.print(". Message: ");
+    }
+    String messageTemp;
+
+    for (int i = 0; i < length; i++)
+    {
+        if (DEBUG)
+            Serial.print((char)message[i]);
+        messageTemp += (char)message[i];
+    }
+    if (DEBUG)
+        Serial.println();
+
+    String topicroot = get_beacon_id();
+    String cmd = String(topic);
+
+    cmd = cmd.substring(17);
+
+    topicroot += "/set/";
+    if (DEBUG)
+        Serial.println(cmd);
+
+    bool iscommandvalid = true;
+
+    // FREQUENCY OF DATA SENDING
+    if (cmd == "dataFrequency")
+    {
+        if (DEBUG)
+            Serial.print("Changing Frequency to ");
+        // data_frequency = messageTemp.toInt();
+    }
+
+    // DO AN OTA BASED ON PASSED FIRMWARE
+    else if (cmd == "ota")
+    {
+        if (DEBUG)
+            Serial.print("Custom Firmware update");
+        // updateFirmware(messageTemp);
+    }
+
+    else if (cmd == "restart" || cmd == "reboot")
+    {
+        if (DEBUG)
+            Serial.print("Rebooting by mqtt");
+        ESP.restart();
+    }
+
+    else if (cmd == "timeZone")
+    {
+        if (DEBUG)
+            Serial.print("Change the time Zone");
+        //  timeZone = messageTemp.toInt();
+    }
+
+    else if (cmd == "play")
+    {
+        if (DEBUG)
+            Serial.print("Play the Audio");
+    }
+
+    else if (cmd == "setDefaults" || cmd == "factoryreset")
+    {
+        if (DEBUG)
+            Serial.print("Setting defaults");
+        //  factory_reset_device();
+    }
+
+    else
+    {
+        iscommandvalid = false;
+    }
+
+    if (iscommandvalid)
+    {
+        //  save_config();
+        //  read_config();
+        // send_mqtt_string("set/cmd", "OK", false);
+        //  sendConfig();
+    }
+}
+//
+
+void subscribe_to_topic()
+{
+    String substopic = get_beacon_id() + "/set/#";
+    char tempStringSubsTopic[50];
+    substopic.toCharArray(tempStringSubsTopic, substopic.length() + 1);
+
+    mqttClient.subscribe(tempStringSubsTopic);
+}
+// Send ERROR Message
+void mqtt_send_error(String errormessage)
+{
+    char out[128];
+    String topic = getFullTopic("error");
+    char tempStringTopic[50];
+    char tempStringvalue[100];
+    topic.toCharArray(tempStringTopic, topic.length() + 1);
+    errormessage.toCharArray(tempStringvalue, topic.length() + 1);
+    boolean rc = mqttClient.publish(tempStringTopic, tempStringvalue);
+}
+
+void mqtt_reconnect()
+{
+    mqttClient.setServer(mqtt_server, 1883);
+    mqttClient.setCallback(mqtt_callback);
+
+    // Loop until we're reconnected
+    if (!mqttClient.connected())
+    {
+        Serial.print("Attempting MQTT connection...");
+        // Attempt to connect
+        if (mqttClient.connect(mqttClientID, mqttUser, mqttPassword))
+        {
+            if (DEBUG)
+                Serial.println("connected");
+            subscribe_to_topic();
+            // Subscribe
+        }
+        else
+        {
+            errorCount++;
+            Serial.print("failed, rc=");
+            Serial.print(mqttClient.state());
+            Serial.println(" try again in 5 seconds");
+            // Wait 5 seconds before retrying
+            //  delay(5000);
+        }
+    }
+    if (DEBUG)
+    {
+        //  microSecondsSinceBoot = esp_timer_get_time() - previousSecondsSinceBoot;
+        //  Serial.println("MQTT Connect:" + String(microSecondsSinceBoot / 1000));
+    }
+}
+
+// Send device Configurations
+void send_summary()
+{
+}
+
+void clean_up()
+{
+}
 
 /******************************
 connectWiFi()
