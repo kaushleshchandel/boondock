@@ -144,7 +144,7 @@
 // From v1.1.0
 // You only need to format the filesystem once
 //#define FORMAT_FILESYSTEM       true
-#define FORMAT_FILESYSTEM         false
+//#define FORMAT_FILESYSTEM         false
 
 #define MIN_AP_PASSWORD_SIZE    8
 
@@ -164,7 +164,7 @@ typedef struct
   String wifi_pw;
 }  WiFi_Credentials_String;
 
-#define NUM_WIFI_CREDENTIALS      2
+#define NUM_WIFI_CREDENTIALS      3
 
 // Assuming max 491 chars
 #define TZNAME_MAX_LEN            50
@@ -286,10 +286,10 @@ IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 //#include <ESP_WiFiManager-Impl.h>         //https://github.com/khoih-prog/ESP_WiFiManager
 
 // Onboard LED I/O pin on NodeMCU board
-const int PIN_LED = 2; // D4 on NodeMCU and WeMos. GPIO2/ADC12 of ESP32. Controls the onboard LED.
+const int PIN_LED = GREEN_LED_GPIO; // D4 on NodeMCU and WeMos. GPIO2/ADC12 of ESP32. Controls the onboard LED.
 
 // SSID and PW for Config Portal
-String ssid = "ESP_" + String(ESP_getChipId(), HEX);
+String ssid = "Boondock_" + String(ESP_getChipId(), HEX);
 String password;
 
 // SSID and PW for your Router
@@ -627,14 +627,9 @@ void saveConfigData()
   }
 }
 
-void wm_setup()
+void wm_setup(bool FORMAT_FILESYSTEM = false)
 {
-  // put your setup code here, to run once:
-  // initialize the LED digital pin as an output.
-  pinMode(PIN_LED, OUTPUT);
   
-  Serial.begin(115200);
-  while (!Serial);
   
   Serial.print(F("\nStarting ConfigOnStartup using ")); Serial.print(FS_Name);
   Serial.print(F(" on ")); Serial.println(ARDUINO_BOARD);

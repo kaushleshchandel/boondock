@@ -39,7 +39,8 @@ void setup()
   Serial.begin(115200);
 
   Serial.println("Connecting to wifi...");
-  connect_wifi(ssid, password);
+  //wm_setup(false);
+   connect_wifi(ssid, password);
   mqtt_reconnect();
 
   // init and get the time

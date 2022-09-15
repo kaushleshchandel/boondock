@@ -24,6 +24,7 @@ int current_state = 0;
 #include <ArduinoJson.h>
 #include "config.h"
 #include <HTTPClient.h>
+//#include <captiv.h>
 
 RTC_DATA_ATTR int errorCount = 0;
 RTC_DATA_ATTR int readCount = 0;
@@ -470,18 +471,7 @@ bool upload_file_to_server(String filename)
 
     return res;
 }
-
-// Time function
-void printLocalTime()
-{
-    struct tm timeinfo;
-    if (!getLocalTime(&timeinfo))
-    {
-        Serial.println("Failed to obtain time");
-        return;
-    }
-    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-}
+ 
 
 bool init_SD()
 {
