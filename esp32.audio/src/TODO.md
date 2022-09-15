@@ -10,7 +10,7 @@
 •	Playback MP3 on the Device ( before Wifi is Setup)
 
 •	TTS based custom essage playback on the device
-• Server Side - Identify & test a boondock
+•   Server Side - Identify & test a boondock
 
 •	Playback recorded audio on Speaker
 
