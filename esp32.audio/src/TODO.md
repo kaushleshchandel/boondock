@@ -1,22 +1,25 @@
  # TODO
 
 
-•	WiFi Manager
-•	6 letter Code on WiFi Manager
-•	Web interface to Add & Remove the Device
+
 •	ESP32 Add Code to play stored MP3 Files
-
-
 •	Playback MP3 on the Device ( before Wifi is Setup)
+•	Playback recorded audio on Speaker
+•	Audio passthrough on speaker for testing the Input
+•	Web Interface for Device Parameters
 
 •	TTS based custom essage playback on the device
 •   Server Side - Identify & test a boondock
 
-•	Playback recorded audio on Speaker
 
-•	Web Interface for Device Parameters
 
-•	Audio passthrough on speaker for testing the Input
+•	WiFi Manager
+•	6 letter Code on WiFi Manager
+•	Web interface to Add & Remove the Device
+
+
+
+
 
 
  - Fetch settings from the server on begin
