@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-String serverName = "app.boondock.live"; // Or replace with your own domain
+String serverName = "44.211.104.91"; // Or replace with your own domain
 String serverPath = "/upload.php";       // The default serverPath should be upload.php
 String fileLocation = "/inbox/";         // Location on SD card where files are saved
 
