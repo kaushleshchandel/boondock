@@ -3,17 +3,17 @@
 
 #include <Arduino.h>
 
-String serverName = "44.211.104.91"; // Or replace with your own domain
+String serverName = "XXXXXX"; // Or replace with your own domain
 String serverPath = "/upload.php";       // The default serverPath should be upload.php
 String fileLocation = "/inbox/";         // Location on SD card where files are saved
 
-const char *mqtt_server = "3.137.29.71";
+const char *mqtt_server = "XXXX";
 
-const char *mqttUser = "blueman";
-const char *mqttPassword = "TYgu6fPhoofJ";
-const char *mqttClientID = "ESP32BoonDock";
+const char *mqttUser = "XXXX";
+const char *mqttPassword = "XXXX";
+const char *mqttClientID = "XXXX";
 
-String ssid = "AAA";             // Change with your Wifi Router
-String password = "608980608980";   // Your wifi Router Password
+String ssid = "XXXX";             // Change with your Wifi Router
+String password = "XXXXX";   // Your wifi Router Password
 
 #endif
