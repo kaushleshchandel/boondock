@@ -1,6 +1,6 @@
 #3d Printing parts
-
-[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/K9tplKsggrA)
+ 
+ [![Watch the video](/3d.print/video_preview.png)](https://youtu.be/K9tplKsggrA)
 
 ![Boondock with battery](/3d.print/BoondockEcho.jpg)
 
