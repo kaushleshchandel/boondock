@@ -1,7 +1,7 @@
 #3d Printing parts
  
  [![Watch the video](/3d.print/video_preview.png)](https://youtu.be/K9tplKsggrA)
- 
+
 
 3d print the parts nesesary for Boondock Echo. 
 
