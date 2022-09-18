@@ -25,18 +25,17 @@ Boondock Slim can be installed with or without a thin profile speaker. It doesnt
 ### Links to all the parts
 
 ![Battery](/3d.print/Battery.jpg)
-[Amazon link to battery](https://www.amazon.com/2600mAh-Lithium-28-86Wh-Rechange-Connectors/dp/B08D2379MJ/ref=sr_1_1?crid=TERTXXXIRY64&keywords=three+cell+li+ion+battery&qid=1663502006&sprefix=three+cell+li+ion+battery%2Caps%2C104&sr=8-1)
+[Amazon link to battery](https://a.co/d/b0EKAVF)
 
- 
 ![Pushbuttons](/3d.print/PushButton.jpg)
-[Amazon link to push buttons](https://www.amazon.com/gp/product/B086L1WKS3/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
+[Amazon link to push buttons](https://a.co/d/g9sqHGD)
  
-
 ![Speaker](/3d.print/Speaker.jpg)
-[Amazon link to Speakers](https://www.amazon.com/gp/product/B08JCHK7GR/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&th=1)
-
-
+[Amazon link to Speakers](https://a.co/d/degUwFO)
 
 ![ESP32](/3d.print/ESP32AudioKit.jpg)
-[Amazon link to ESP32 Audio Kit](https://www.amazon.com/gp/product/B0B63KZ6C1/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
+[Amazon link to ESP32 Audio Kit](https://a.co/d/4O83x4C)
 
+[Amazon link to Baofeng Radio](https://a.co/d/3xN6RiG)
+
+[Amazon link to Audio Cable](https://a.co/d/8nfM7wO)
