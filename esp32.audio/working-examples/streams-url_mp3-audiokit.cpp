@@ -35,7 +35,7 @@ void setup(){
   dec.begin();
 
   // mp3 radio
-  url.begin("http://stream.srg-ssr.ch/m/rsj/mp3_128","audio/mp3");
+  url.begin("https://app.boondock.live/uploads/C4DEE22006F4/2022.09.13_16:08:03.mp3","audio/mp3");
 
 }
 

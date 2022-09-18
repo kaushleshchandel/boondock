@@ -23,6 +23,8 @@ int current_state = 0;
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include "config.h"
+#include <HTTPClient.h>
+//#include <captiv.h>
 
 RTC_DATA_ATTR int errorCount = 0;
 RTC_DATA_ATTR int readCount = 0;
@@ -52,6 +54,58 @@ uint8_t channels = 1; // The stream will have 1 channel
 
 uint16_t buffer[RECORDING_BUFFER_SIZE];
 
+void play(WAVDecoder &decoder, StreamCopy &copier)
+{
+    while (decoder)
+        copier.copy();
+}
+
+void audio_player(String URL)
+{
+    HTTPClient http;
+
+    int httpCode = http.begin(URL.c_str()); // Specify the URL
+
+    Serial.println("Saving" + URL);
+
+    myFile = SD.open("/test.wav", FILE_WRITE);
+
+    if (httpCode > 0) // Check for the returning code
+    {
+        http.writeToStream(&myFile);
+    }
+    else
+    {
+        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
+    }
+
+    myFile.close();
+    Serial.println("Done!");
+}
+
+void player(String URL)
+{
+
+    URLStream url("AAA", "608980608980");
+    I2SStream i2s;                        // I2S stream
+    WAVDecoder decoder(i2s);              // decode wav to pcm and send it to I2S
+    EncodedAudioStream out(i2s, decoder); // Decoder stream
+    StreamCopy copier(out, url);          // copy in to out
+
+    // setup i2s
+    auto config = i2s.defaultConfig(TX_MODE);
+    config.sample_rate = 32000;
+    config.bits_per_sample = 32;
+    config.channels = 1;
+    i2s.begin(config);
+
+    // rhasspy
+    url.begin(URL.c_str(), "audio/wav", GET);
+    play(decoder, copier);
+
+    url.end();
+}
+
 String get_beacon_id()
 {
     String bid = WiFi.macAddress();
@@ -68,7 +122,7 @@ String getFullTopic(String topic)
 
 void mqtt_callback(char *topic, byte *message, unsigned int length)
 {
-    if (DEBUG)
+    if (DEBUG == DEBUG_ALL)
     {
         Serial.print("Message arrived on topic: ");
         Serial.print(topic);
@@ -78,11 +132,11 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
 
     for (int i = 0; i < length; i++)
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.print((char)message[i]);
         messageTemp += (char)message[i];
     }
-    if (DEBUG)
+    if (DEBUG == DEBUG_ALL)
         Serial.println();
 
     String topicroot = get_beacon_id();
@@ -91,7 +145,7 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
     cmd = cmd.substring(17);
 
     topicroot += "/set/";
-    if (DEBUG)
+    if (DEBUG == DEBUG_ALL)
         Serial.println(cmd);
 
     bool iscommandvalid = true;
@@ -99,7 +153,7 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
     // FREQUENCY OF DATA SENDING
     if (cmd == "dataFrequency")
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.print("Changing Frequency to ");
         // data_frequency = messageTemp.toInt();
     }
@@ -107,34 +161,35 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
     // DO AN OTA BASED ON PASSED FIRMWARE
     else if (cmd == "ota")
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.print("Custom Firmware update");
         // updateFirmware(messageTemp);
     }
 
     else if (cmd == "restart" || cmd == "reboot")
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.print("Rebooting by mqtt");
         ESP.restart();
     }
 
     else if (cmd == "timeZone")
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.print("Change the time Zone");
         //  timeZone = messageTemp.toInt();
     }
 
     else if (cmd == "play")
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.print("Play the Audio");
+        audio_player(messageTemp);
     }
 
     else if (cmd == "setDefaults" || cmd == "factoryreset")
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.print("Setting defaults");
         //  factory_reset_device();
     }
@@ -186,7 +241,7 @@ void mqtt_reconnect()
         // Attempt to connect
         if (mqttClient.connect(mqttClientID, mqttUser, mqttPassword))
         {
-            if (DEBUG)
+            if (DEBUG == DEBUG_ALL)
                 Serial.println("connected");
             subscribe_to_topic();
             // Subscribe
@@ -201,7 +256,7 @@ void mqtt_reconnect()
             //  delay(5000);
         }
     }
-    if (DEBUG)
+    if (DEBUG == DEBUG_ALL)
     {
         //  microSecondsSinceBoot = esp_timer_get_time() - previousSecondsSinceBoot;
         //  Serial.println("MQTT Connect:" + String(microSecondsSinceBoot / 1000));
@@ -274,7 +329,7 @@ bool upload_file_to_server(String filename)
 
     String fileName = myFile.name();
     String fileSize = formatBytes(myFile.size());
-    if (DEBUG)
+    if (DEBUG == DEBUG_ALL)
     {
         Serial.println("file exists");
     }
@@ -284,7 +339,7 @@ bool upload_file_to_server(String filename)
 
     if (myFile)
     {
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
         {
             Serial.println("test file:ok");
             // print content length and host
@@ -361,7 +416,7 @@ bool upload_file_to_server(String filename)
 
     // Read all the lines of the reply from server and print them to Serial
 
-    if (DEBUG)
+    if (DEBUG == DEBUG_ALL)
     {
         Serial.println("request sent");
     }
@@ -405,7 +460,7 @@ bool upload_file_to_server(String filename)
     //  Serial.println();
     client.stop();
 
-    if (DEBUG)
+    if (DEBUG == DEBUG_ALL)
     {
         Serial.println(getBody);
     }
@@ -414,18 +469,6 @@ bool upload_file_to_server(String filename)
     myFile.close();
 
     return res;
-}
-
-// Time function
-void printLocalTime()
-{
-    struct tm timeinfo;
-    if (!getLocalTime(&timeinfo))
-    {
-        Serial.println("Failed to obtain time");
-        return;
-    }
-    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
 bool init_SD()
@@ -471,7 +514,7 @@ bool init_SD()
 
 // measure basic properties of the input signal
 // Return if there is Sound
-bool measure_sound(bool sample = false)
+bool measure_sound(int buflen, bool sample = false)
 {
     int16_t signalMax = 0, signalMin = 1024, signalTotal = 0;
     int soundMeasure = 0;
@@ -482,7 +525,7 @@ bool measure_sound(bool sample = false)
     else
         buffer_Size = RECORDING_BUFFER_SIZE;
 
-    for (int i = 0; i < buffer_Size; i++)
+    for (int i = 0; i < buflen; i++)
     {
         int16_t k = buffer[i];
         signalMin = min(signalMin, k);
@@ -494,7 +537,57 @@ bool measure_sound(bool sample = false)
     soundMeasure = map(signalTotal, 0, 20000, 0, 100);
 
     // Serial.print("Sound Level:"); Serial.print(soundMeasure); Serial.println(",");
+    if (DEBUG == DEBUG_AUDIO)
+    {
+        Serial.print("Sound Level:");
+        Serial.print(soundMeasure);
+        Serial.print(",");
+        Serial.print("Min:");
+        Serial.println(signalMin);
+        Serial.print("Max:");
+        Serial.println(signalMax);
+    }
 
+    return (soundMeasure > MIN_SOUND); // Returns true when sound is greater than Thrashold
+}
+
+// measure basic properties of the input signal
+// Return if there is Sound
+bool check_sound(int buflen)
+{
+    int16_t signalMax = 0, signalMin = 1024, signalTotal = 0;
+    int soundMeasure = 0;
+    int buffer_Size = 0;
+
+    buffer_Size = SAMPLING_BUFFER_SIZE;
+
+    for (int i = 0; i < SAMPLING_BUFFER_SIZE; i++)
+    {
+        int16_t k = buffer[i];
+        signalMin = min(signalMin, k);
+        signalMax = max(signalMax, k);
+    }
+
+    signalTotal = abs(signalMin) + abs(signalMax);
+
+    soundMeasure = map(signalTotal, 0, 38000, 0, 100);
+
+    if (DEBUG == DEBUG_AUDIO)
+    {
+        Serial.print("Total:");
+        Serial.println(soundMeasure);
+        // Serial.print(","); Serial.print("Min:"); Serial.print(signalMin);
+        // Serial.print(","); Serial.print("Max:"); Serial.print(signalMax);
+        delay(10);
+    }
+    // Serial.println("");
+
+    // Serial.print("Sound Level:"); Serial.print(soundMeasure); Serial.println(",");
+    if (DEBUG == DEBUG_NONE || DEBUG == DEBUG_ALL  && soundMeasure > MIN_SOUND)
+    {
+        Serial.print("Sound Level : ");
+        Serial.print(soundMeasure);
+    }
     return (soundMeasure > MIN_SOUND); // Returns true when sound is greater than Thrashold
 }
 
@@ -536,7 +629,7 @@ void capture_audio()
 Captures an Audio sample
 Sampling rate must match the Wav Encoder
 */
-String capture_audio()
+String capture_audio(int buflen)
 {
     silentSince = millis();
     unsigned long StartTime = millis(); // Startime for the File
@@ -566,7 +659,8 @@ String capture_audio()
 
     if (file_created)
     {
-        //   Serial.println("Saving to WAV file...");
+        if (DEBUG == DEBUG_ALL)
+            Serial.println("Saving to WAV file...");
     }
 
     unsigned long CurrentTime = millis();
@@ -578,7 +672,7 @@ String capture_audio()
 
         if (ElapsedTimeinSeconds > MAX_RECORDING_DURATION)
         {
-            if (DEBUG)
+            if (DEBUG == DEBUG_ALL)
                 Serial.println("Closing file by Duration");
             myFile.close();
             break;
@@ -589,7 +683,7 @@ String capture_audio()
 
         if (is_silent() == true)
         {
-            if (DEBUG)
+            if (DEBUG == DEBUG_ALL)
                 Serial.println("Closing file due to silence");
             myFile.close();
             break;
@@ -605,7 +699,7 @@ String capture_audio()
         {
             //  Serial.println("error opening " + filename);
             myFile.close();
-            if (DEBUG)
+            if (DEBUG == DEBUG_ALL)
                 Serial.println("Closing file due to error");
             current_state = STATE_SD_WRITE_ERROR;
             break;
@@ -615,12 +709,14 @@ String capture_audio()
     if (myFile)
     {
         myFile.close();
-        if (DEBUG)
+        if (DEBUG == DEBUG_ALL)
             Serial.println("Closing file by max buffers");
     }
     CurrentTime = millis(); // Get Current Time
 
     return filename;
 }
+
+// UrlStream -copy-> EncodedAudioStream -> I2S
 
 #endif
