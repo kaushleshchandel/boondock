@@ -1,5 +1,7 @@
 #3d Printing parts
 
+[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://youtu.be/K9tplKsggrA)
+
 ![Boondock with battery](/3d.print/BoondockEcho.jpg)
 
 3d print the parts nesesary for Boondock Echo. 
@@ -39,3 +41,4 @@ Boondock Slim can be installed with or without a thin profile speaker. It doesnt
 [Amazon link to Baofeng Radio](https://a.co/d/3xN6RiG)
 
 [Amazon link to Audio Cable](https://a.co/d/8nfM7wO)
+
