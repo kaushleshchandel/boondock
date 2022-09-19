@@ -1,4 +1,5 @@
 # Boondock Echo
+![logo](/mediakit/logos/logo_boondock_small.jpg)
 
 ## What is Boondock Echo?
 Boondock Echo is a time-shift audio project created for emergency radio communications. A Boondock Echo module connects to transceivers with audio cables between the mic and speaker of the radio and the speaker and mic of the Bookdock Echo moule. 
@@ -34,7 +35,6 @@ The following parts are what we used to make the prototype.  Other substitutes a
   <li>1x 3.5mm female to 2.5 mm male stereo audio jack: (https://www.amazon.com/dp/B01FPRADYK or similar)</li>
   <li>1x Speaker with 2.0mm 2 pin JST connector (https://www.amazon.com/dp/B07FTB281F or similar)</li>
 </ol>
-
 
 
 ## Programming the ESP32 Audio kit
