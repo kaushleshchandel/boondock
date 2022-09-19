@@ -1,7 +1,8 @@
 # Boondock Echo
 
 ## What is Boondock Echo?
-Boondock is a time-shift audio project created for emergency radio communications. A Boondock Echo module connects to a Ham radio device using audio cables to connect the mic and speaker to the Bookdock Echo moule. Once started, it will listen to the radio for messages. Whenever new messages are received, it captures the audio, converts it to an audio file, and sends it to sever where it is stored and queued for playback. The message can be played back on the boondock server interface or queue multiple messages for playback on a radio.
+Boondock Echo is a time-shift audio project created for emergency radio communications. A Boondock Echo module connects to transceivers with audio cables between the mic and speaker of the radio and the speaker and mic of the Bookdock Echo moule. 
+The Boondock Echo listens to the radio for traffic. Whenever new traffic is received, it captures the audio as a .mp3 on a local sd card, and then sends the file to sever for storage, and queing, and playback. Users can play back messages on the Boondock browser interface or que messages for transmission on a radio.
 
 ## Key features
 <ol>
@@ -17,7 +18,7 @@ Boondock is a time-shift audio project created for emergency radio communication
 
 [CLICK HERE](/3d.print/README.md) for build instructions
 
-To build Boondock, you need ESP32 Audio kit, a speaker, Li-ion battery, a power switch, and 3d printed enclosure with some screws. 
+To build Boondock, you need ESP32 Audio kit, a speaker, Li-ion battery, a power switch, and a 3d printed enclosure with some screws. 
 
 List of purchasable components.
 Currently supported module:
