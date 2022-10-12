@@ -5,7 +5,6 @@ include "_auth.php";
 
 //Get the KPI's
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
     // execute the stored procedure
     $sql = 'CALL get_kpi( ' . $_SESSION["id"] . ' )';
 
@@ -13,24 +12,27 @@ try {
     $q = $pdo->query($sql);
     $q->setFetchMode(PDO::FETCH_ASSOC);
 
-   // $kpi_dock_count = 0;
-   // echo $r['dock_count'];
-
-  //  $kpi_dock_count = $r['dock_count'];
-   // $kpi_total_messages = $r['total_messages'];
-  //  $kpi_sent_messages = $r['sent_messages'];
- //   $kpi_retransmission_rate = $r['retransmission_rate'];
+    $r = $q->fetch();
 
     if (!isset($kpi_dock_count))
-    $kpi_dock_count = 3;
+        $kpi_dock_count = $r['dock_count'];
+    else
+        $kpi_dock_count = 0;
     if (!isset($kpi_total_messages))
-    $kpi_total_messages = 1234;
+        $kpi_total_messages = $r['total_messages'];
+    else
+        $kpi_total_messages = 0;
     if (!isset($kpi_sent_messages))
-    $kpi_sent_messages = 123;
+        $kpi_sent_messages = $r['sent_messages'];
+    else
+        $kpi_sent_messages = 0;
     if (!isset($kpi_retransmission_rate))
-    $kpi_retransmission_rate = 12;
- 
+        $kpi_retransmission_rate = $r['retransmission_rate'];
+    else
+        $kpi_retransmission_rate = 0;
 
+    unset($sql);
+    unset($q);
 } catch (PDOException $e) {
     die("Error occurred:" . $e->getMessage());
 }
@@ -39,7 +41,7 @@ try {
 
 // Get the Active messages
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
+    //  $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
     // execute the stored procedure
     $sql = 'CALL get_active_messages(' . $_SESSION["id"] . ',0,0)';
 
@@ -109,7 +111,19 @@ try {
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">Received Messages</h6>
+                            <!--  
+                                <h6 class="m-0 font-weight-bold text-primary">Received Messages</h6>
+                            -->
+                            <div class="dropdown float-right">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Select Tags
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item" href="#">Action</a>
+                                    <a class="dropdown-item" href="#">Another action</a>
+                                    <a class="dropdown-item" href="#">Something else here</a>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -122,8 +136,8 @@ try {
                                             <th>Audio</th>
                                             <th>Received</th>
                                             <th>Size</th>
-                                            <th>Queued</th>
-                                            <th>Sent</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
 
@@ -139,16 +153,29 @@ try {
                                                         <source src="<?php echo $r['file_name'] ?>" type="audio/wav">
                                                         Your browser does not support the audio tag.
                                                     </audio>
+
                                                 </td>
                                                 <td><?php echo time_elapsed_string($r['added']) ?></td>
                                                 <td><?php echo $r['length'] ?></i></td>
-                                                <td><?php echo $r['queued'] ?></td>
-                                                <td><?php echo $r['sent'] ?></td>
+
+                                                <td>
+
+                                                    <a><i class="fa fa-envelope text-danger "> </i>
+                                                        <a><i class="fa fa-exclamation"> </i>
+
+                                                </td>
+
+                                                <td>
+                                                    <a href="send.php?mid=<?php echo $r['file_name'] ?>"><i class="fa fa-paper-plane"> </i>
+                                                        <a><i class="fa fa-phone"> </i>
+                                                        <a><i class="fa fa-ellipsis-h"> </i>
+                                                </td>
 
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
                                 </table>
+
                             </div>
                         </div>
                     </div>
@@ -160,7 +187,7 @@ try {
             <!-- End of Main Content -->
 
             <!-- Footer -->
-            <?php include '_footer.php' ?>;
+            <?php include '_footer.php' ?>
             <!-- End of Footer -->
 
         </div>
@@ -175,9 +202,8 @@ try {
     </a>
 
     <!-- Logout Modal-->
-    <?php include '_logout.php' ?>;
-    <?php include '_bootstrap.php' ?>;
-
+    <?php include '_logout.php' ?>
+    <?php include '_bootstrap.php' ?>
 
 
 </body>

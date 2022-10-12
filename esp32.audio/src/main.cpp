@@ -1,32 +1,34 @@
-/*
-Reads Microphone or Line in and upoads it to the server
-
-*/
 
 #include "Arduino.h"
 
+#define SW_VERSION "1.0"
+#define HW_VERSION "ait2.2"
+#define FILE_LOCATION "https://app.boondock.live/"
+
 /**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
-#define INPUT_LINE AUDIO_HAL_ADC_INPUT_LINE2 // Uses Mic & Line input
-#define AUDIO_ON_SPEAKER true               // Play Audio on the speaker?
-#define SILENSE_BEFORE_RECORDING_STOPS 3000  // How long is it silent before recording stops; in milliseconds
-#define MAX_RECORDING_DURATION 60            // Maximum recording file duration; in seconds
-#define MIN_SOUND 50                         // How much sound before recording starts Range 0 to 100;
+#define INPUT_LINE AUDIO_HAL_ADC_INPUT_LINE2        // Uses Mic & Line input
+#define DEFAULT_AUDIO_ON_SPEAKER false              // Play Audio on the speaker?
+#define DEFAULT_SILENSE_BEFORE_RECORDING_STOPS 1000 // How long is it silent before recording stops; in milliseconds
+#define DEFAULT_MIN_RECORDING_DURATION 3000         // Minimum recording file duration; in Milliseconds
+#define DEFAULT_MAX_RECORDING_DURATION 10000        // Maximum recording file duration; in Milliseconds
+#define DEFAULT_MIN_SOUND 20                        // How much sound before recording starts Range 0 to 100;
+#define DEFAULT_SPEAKER_VOLUME 50                   // How much sound before recording starts Range 0 to 100;
 
 #define DEBUG_NONE 0
 #define DEBUG_AUDIO 1
 #define DEBUG_WIFI 2
 #define DEBUG_ALL 3
-
 #define DEBUG DEBUG_ALL // Set to true when you want to see all the useless messages scrolling on serial port
 // Debug mode = 0
 // Debug mode = 1 Switches to Ossicloscope mode for Arduino plotter
 // Debug mode = 2 Shows
 // Debug mode = 3 Shows all messages on the sSerial monitor
+
 /**************** CHANGE THESE VARIABLES AS NEEDED ****************************/
 
 /**************** THESE ARE IMPORTANT BUT MESS WITH THESE WHEN U R SURE *********/
 #define MAX_AUDIO_BUFFER 10000                      // Maximum bufferes processed before recording is stopped
-#define SAMPLING_BUFFER_SIZE 32                    // Buffer samples taken to listen for sound activity
+#define SAMPLING_BUFFER_SIZE 32                     // Buffer samples taken to listen for sound activity
 #define RECORDING_BUFFER_SIZE 2048                  //Buffer samples used to save the audio file\
 #define SAMPLING_RATE AUDIO_HAL_08K_SAMPLES         // Sampling rate
 #define BITS_PER_SAMPLE AUDIO_HAL_BIT_LENGTH_16BITS // Bitrate
@@ -34,83 +36,37 @@ Reads Microphone or Line in and upoads it to the server
 #define DEFAULT_BITS_PER_SAMPLE 16
 #define DEFAULT_CHANNELS 1
 
+bool sd_card_available = false;
+int _FILE_SIZE = 0;
+
 /**************** THESE ARE IMPORTANT BUT MESS WITH THESE WHEN U R SURE *********/
 
 #include "common.h" //Common.h file holds all the reference and functions
 
-/******************************
-setup()
-Setup the hardware
-*******************************/
 void setup()
 {
   Serial.begin(115200);
 
-  Serial.println("Connecting to wifi...");
-  // wm_setup(false);
-  connect_wifi(ssid, password);
-  mqtt_reconnect();
+  connect_wifi(ssid, password); // Connect to wifi
+  get_config();
+  mqtt_reconnect();                                         // Connect to MQTT
+  mqtt_send_summary();                                      // Send MQTT Status & Config data
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer); // Configure time
 
-  // init and get the time
-  // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  // setup i2s
+  auto config = i2s.defaultConfig(TX_MODE);
+  i2s.begin(config);
 
-  Serial.println("Initializing SD card...");
-  init_SD();
-  Serial.println("Initializing Mic...");
-  init_mic();
-  mqtt_send_error("Hello");
+  //   audio_player("https://www2.cs.uic.edu/~i101/SoundFiles/CantinaBand60.wav");
 }
 
-/******************************
-setup()
-Setup the hardware
-*******************************/
 void loop()
 {
 
-  current_state = STATE_LISTENING;
-
-  size_t len = kit.read(buffer, SAMPLING_BUFFER_SIZE);
-   
-  if (check_sound(len) &&  DEBUG != DEBUG_AUDIO)
-  {
-    // Serial.println("Audio detected");
-    if (DEBUG == DEBUG_NONE)
-      Serial.print("+");
-    current_state = STATE_RECORDING;
-    // printLocalTime();
-    String fname = capture_audio(len);
-    if (fname == "Error")
-    {
-      Serial.print(" Capture Error ");
-    }
-    else
-    {
-      current_state = STATE_SENDING;
-      if (DEBUG == DEBUG_NONE)
-        Serial.print("+");
-      if (upload_file_to_server(fname))
-        if (DEBUG == DEBUG_NONE)
-          Serial.println("OK");
-        else
-          Serial.println(" File Send Error ");
-    }
-  }
-
+  if (WiFi.status() != WL_CONNECTED)
+    connect_wifi(ssid, password);
   mqttClient.loop();
-  if (current_state == STATE_SD_WRITE_ERROR)
-  {
-    Serial.print("Disk Write Error");
-    esp_restart();
-  }
-  else if (current_state == STATE_SD_WRITE_ERROR)
-  {
-    Serial.print("Disk Read Error");
-    esp_restart();
-  }
-  else if (current_state == STATE_SD_WRITE_ERROR)
-  {
-    Serial.print("Audio file upload Error");
-    esp_restart();
-  }
+  process_led();
+  process_buttons();
+  // Serial.print(".");
 }

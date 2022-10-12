@@ -5,7 +5,7 @@
         <div class="sidebar-brand-icon rotate-n-15">
             <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">BOONDOCK</div>
+        <div class="sidebar-brand-text mx-3">BOONDOCK DEV</div>
     </a>
 
     <!-- Divider -->
@@ -26,14 +26,31 @@
     <li class="nav-item active">
         <a class="nav-link" href="docks.php">
             <i class="fas fa-fw fa-sync"></i>
-            <span>My Boondocks</span></a>
+            <span>Boondocks</span></a>
     </li>
+
 
     <!-- Nav Item - Docks -->
     <li class="nav-item active">
         <a class="nav-link" href="docks.php">
-            <i class="fas fa-fw fa-bolt"></i>
-            <span>My Dock Packs</span></a>
+            <i class="fas fa-fw fa-tag"></i>
+            <span>Tags</span></a>
+    </li>
+
+
+    <!-- Nav Item - Docks -->
+    <li class="nav-item active">
+        <a class="nav-link" href="docks.php">
+            <i class="fas fa-fw fa-chart-bar"></i>
+            <span>Reports</span></a>
+    </li>
+
+    
+    <!-- Nav Item - Docks -->
+    <li class="nav-item active">
+        <a class="nav-link" href="docks.php">
+            <i class="fas fa-fw fa-user-friends"></i>
+            <span>Users</span></a>
     </li>
 
     <!-- Nav Item - Docks -->
@@ -42,7 +59,7 @@
             <i class="fas fa-fw fa-bullseye"></i>
             <span>Settings</span></a>
     </li>
- 
+
 
     <!-- Divider -->
     <hr class="sidebar-divider d-none d-md-block">

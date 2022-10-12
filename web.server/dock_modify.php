@@ -2,17 +2,55 @@
 include "_config.php";
 include '_fx.php';
 
+//Get the KPI's
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
+
+    if (isset($_GET["dock"]))
+        $deviceMac = $_GET["dock"];
+
     // execute the stored procedure
-    $sql = 'CALL get_user_docks(' . $_SESSION["id"] . ')';
+    $sql = 'CALL get_device_settings( "' . $deviceMac . '" );';
 
     // call the stored procedure
     $q = $pdo->query($sql);
     $q->setFetchMode(PDO::FETCH_ASSOC);
+
+    $r = $q->fetch();
+ 
+
+    $count = $q->rowCount();
+    $currentDateTime = date('Y-m-d H:i:s');;
+
+    if ($count > 0) {
+        $id = $r['id'];
+        $mac = $r['mac'];
+        $name = $r['name'];
+        $created = $r['created'];
+        $updated = $r['updated'];
+        $last_seen = $r['last_seen'];
+        $is_online = $r['is_online'];
+        $station = $r['station'];
+        $frequency = $r['frequency'];
+
+        $rx_enabled = $r['rx_enabled'];
+        $tx_enabled = $r['tx_enabled'];
+        $speaker_out = $r['speaker_out'];
+        $silence = $r['silence'];
+        $audio_trigger = $r['audio_trigger'];
+        $volume = $r['volume'];
+        $max_recording = $r['max_recording'];
+        $min_recording = $r['min_recording'];
+        $data = array(
+            "time" => "$currentDateTime", "rx_enabled" => $rx_enabled, "tx_enabled" => $tx_enabled, "speaker_out" => $speaker_out,
+            "silence" => $silence, "audio_trigger" => $audio_trigger, "volume" => $volume, "max_recording" => $max_recording, "min_recording" => $min_recording
+        );
+    }
 } catch (PDOException $e) {
+    echo "Error";
     die("Error occurred:" . $e->getMessage());
 }
+
+
 
 ?>
 
@@ -83,7 +121,7 @@ try {
                                             <div class="d-flex align-items-center">
                                                 <div class="ms-3">
                                                     <div class="small text-muted">Device ID</div>
-                                                    <div class="fs-4 text-dark fw-500">123</div>
+                                                    <div class="fs-4 text-dark fw-500"><?php echo $id; ?></div>
                                                 </div>
                                             </div>
 
@@ -95,12 +133,12 @@ try {
                                             <div class="d-flex align-items-center">
                                                 <div class="ms-3">
                                                     <div class="small text-muted">MAC Address</div>
-                                                    <div class="fs-4 text-dark fw-500">AABBCCDDEEFF</div>
+                                                    <div class="fs-4 text-dark fw-500"><?php echo $mac; ?></div>
                                                 </div>
                                             </div>
 
                                         </div>
-                                        
+
                                     </div>
 
 
@@ -111,7 +149,7 @@ try {
                                             <div class="d-flex align-items-center">
                                                 <div class="ms-3">
                                                     <div class="small text-muted">Created</div>
-                                                    <div class="fs-4 text-dark fw-500">Aug 18, 2022 @ 10:21 PM</div>
+                                                    <div class="fs-4 text-dark fw-500"><?php echo $created; ?></div>
                                                 </div>
                                             </div>
 
@@ -123,7 +161,7 @@ try {
                                             <div class="d-flex align-items-center">
                                                 <div class="ms-3">
                                                     <div class="small text-muted">Last seen</div>
-                                                    <div class="fs-4 text-dark fw-500">5 minutes ago</div>
+                                                    <div class="fs-4 text-dark fw-500"><?php echo time_elapsed_string($last_seen); ?></div>
                                                 </div>
                                             </div>
 
@@ -135,72 +173,68 @@ try {
                                             <div class="d-flex align-items-center">
                                                 <div class="ms-3">
                                                     <div class="small text-muted">Online</div>
-                                                    <div class="fs-4 text-dark fw-500">YES</div>
+                                                    <div class="fs-4 text-dark fw-500"><?php echo $is_online; ?></div>
                                                 </div>
                                             </div>
 
                                         </div>
 
                                     </div>
-                                   
-    
+
+
                                     <div class="row gx-3 mb-3">
                                         <!-- Form Group (Boondock Name)-->
                                         <div class="mb-2 col-md-4">
                                             <label class="small mb-1" for="inputBoondockName">Name</label>
-                                            <input class="form-control" id="inputBoondockName" type="email" placeholder="Name your Boondock Echo" value="Baofeng UV-5R - Chicago Weather" />
+                                            <input class="form-control" id="inputBoondockName" type="email" placeholder="Name your Boondock Echo" value="<?php echo $name; ?>" />
                                         </div>
 
                                         <!-- Form Group (Name)-->
                                         <div class="col-md-2">
                                             <label class="small mb-1" for="inputStation">Station</label>
-                                            <input class="form-control" id="inputStation" type="text" placeholder="Enter the Station name. e.g. Fire" value="Fire" />
+                                            <input class="form-control" id="inputStation" type="text" placeholder="Enter the Station name. e.g. Fire" value="<?php echo $station; ?>" />
                                         </div>
                                         <!-- Form Group (last name)-->
                                         <div class="col-md-2">
                                             <label class="small mb-1" for="inputFrequency">Frequency</label>
-                                            <input class="form-control" id="inputFrequency" type="text" placeholder="Enter Station Frequency" value="125.230" />
+                                            <input class="form-control" id="inputFrequency" type="text" placeholder="Enter Station Frequency" value="<?php echo $frequency; ?>" />
                                         </div>
                                     </div>
-
-                                    <button class="btn btn-info" type="button">Identify</button>
-
 
                                     <hr>
                                     </hr>
 
-                                    
-                                    <label class="large mb-1">Boondock Configuration</label>
+                                    <!-- Form Group BOONDOCK DEVICE Configuration-->
+                                    <label class="large mb-1">Boondock Device Settings</label>
                                     <div class="row gx-3 mb-3">
 
                                         <!-- Form Group (Name)-->
                                         <div class="col-md-2">
                                             <label class="small mb-1" for="inputStation">Silence detection (milliSeconds)</label>
-                                            <input class="form-control" id="inputStation" type="text" placeholder="Enter the Station name. e.g. Fire" value="2000" />
+                                            <input class="form-control" id="inputStation" type="text" placeholder="Enter the Station name. e.g. Fire" value="<?php echo $silence; ?>" />
                                         </div>
                                         <!-- Form Group (last name)-->
                                         <div class="col-md-2">
                                             <label class="small mb-1" for="inputFrequency">Maximum Recording (Seconds)</label>
-                                            <input class="form-control" id="inputFrequency" type="text" placeholder="Enter Station Frequency" value="30" />
+                                            <input class="form-control" id="inputFrequency" type="text" placeholder="Enter Station Frequency" value="<?php echo $max_recording; ?>" />
                                         </div>
 
                                         <div class="col-md-2">
                                             <label class="small mb-1" for="inputStation">Audio Threshold</label>
-                                            <input class="form-control" id="inputStation" type="text" placeholder="Enter the Station name. e.g. Fire" value="50" />
+                                            <input class="form-control" id="inputStation" type="text" placeholder="Enter the Station name. e.g. Fire" value="<?php echo $min_recording; ?>" />
                                         </div>
-                                        <!-- Form Group (last name)-->
-                                        <div class="col-md-2">
-                                            <label class="small mb-1" for="inputFrequency">Amplify audio</label>
-                                            <input class="form-control" id="inputFrequency" type="text" placeholder="Enter Station Frequency" value="50" />
-                                        </div>
+
+
+
                                     </div>
+
 
                                     <!-- Form Group (Group Selection Checkboxes)-->
                                     <div class="mb-3">
-            
+ 
 
                                         <div class="form-check">
-                                            <input class="form-check-input" id="groupSales" type="checkbox" value="" checked />
+                                            <input class="form-check-input" id="groupSales" type="checkbox" value=""  />
                                             <label class="form-check-label" for="groupSales">RX enabled</label>
                                         </div>
                                         <div class="form-check">
@@ -213,9 +247,41 @@ try {
                                         </div>
                                     </div>
 
+
+                                    <button class="btn btn-info" type="button">Play Test Audio on Boondock</button>
+                                    <button class="btn btn-info" type="button">Restart Device</button>
+                                    <button class="btn btn-info" type="button">Record Test Audio</button>
+
+                                    <hr>
+                                    </hr>
+                                    <!-- Form Group Advanced Configuration-->
+                                    <label class="large mb-1">Advanced Settings</label>
+                                    <!-- Form Group (Group Selection Checkboxes)-->
+                                    <div class="mb-3">
+
+                                        <div class="form-check col-md-4">
+                                            <input class="form-check-input" id="groupSales" type="checkbox" value="" />
+                                            <label class="form-check-label" for="groupSales">Convert Audio to text</label>
+                                        </div>
+                                        <div class="form-check col-md-4">
+                                            <input class="form-check-input" id="groupDevs" type="checkbox" value="" />
+                                            <label class="form-check-label" for="groupDevs">Keep Audio files forever</label>
+                                        </div>
+                                        <div class="form-check col-md-4">
+                                            <input class="form-check-input" id="groupMarketing" type="checkbox" value="" />
+                                            <label class="form-check-label" for="groupMarketing">Compress Audio</label>
+                                        </div>
+                                        <div class="form-check col-md-4">
+                                            <input class="form-check-input" id="groupMarketing" type="checkbox" value="" />
+                                            <label class="form-check-label" for="groupMarketing">Auto equalize Audio</label>
+                                        </div>
+                                    </div>
+
+
                                     <!-- Submit button-->
                                     <button class="btn btn-primary" type="button">Save changes</button>
                                     <button class="btn btn-secondary" type="button">Cancel</button>
+                                    <button class="btn btn-danger" type="button">Delete</button>
                                 </form>
 
                             </div>
@@ -230,7 +296,7 @@ try {
                 <!-- End of Main Content -->
 
                 <!-- Footer -->
-                <?php include '_footer.php' ?>;
+                <?php include '_footer.php' ?>
                 <!-- End of Footer -->
 
             </div>
@@ -245,8 +311,8 @@ try {
         </a>
 
         <!-- Logout Modal-->
-        <?php include '_logout.php' ?>;
-        <?php include '_bootstrap.php' ?>;
+        <?php include '_logout.php' ?>
+        <?php include '_bootstrap.php' ?>
 
 
 </body>

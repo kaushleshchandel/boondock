@@ -10,7 +10,6 @@ if (isset($_POST['but_submit'])) {
     $uname = mysqli_real_escape_string($con, $_POST['txt_uname']);
     $password = mysqli_real_escape_string($con, $_POST['txt_pwd']);
 
-
     if ($uname != "" && $password != "") {
 
         $sql_query = "select 1 as cntUser, id, firstname, lastname, is_super_admin, is_admin from bdk.user where username='" . $uname . "' and password='" . $password . "'";

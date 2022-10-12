@@ -66,8 +66,6 @@ try {
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
 
-
-
                     <!-- Page Heading -->
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
@@ -85,6 +83,8 @@ try {
                                             <th>Name</th>
                                             <th>Station</th>
                                             <th>Frequency</th>
+                                            <th>RX</th>
+                                            <th>TX</th>
                                             <th>Received</th>
                                             <th>Sent</th>
                                             <th>Last seen</th>
@@ -103,11 +103,16 @@ try {
                                                 <td><?php echo $r['name'] ?></td>
                                                 <td><?php echo $r['station'] ?></td>
                                                 <td><?php echo $r['frequency'] ?></td>
+                                                <td><?php echo $r['rx_enabled'] ?></td>
+                                                <td><?php echo $r['tx_enabled'] ?></td>
                                                 <td><?php echo $r['received'] ?></td>
                                                 <td><?php echo $r['sent'] ?></td>
                                                 <td><?php echo time_elapsed_string($r['last_seen']) ?></td>
-                                                <td><a class="btn btn-light" href="dock_modify.php<?php echo '?dock=' . $r['id'] ?>">Modify</a> </td>
-
+ 
+                                                <td class="smallText" align="right" style="white-space:nowrap;">
+                                                    <a href="dock_modify.php<?php echo '?dock=' . $r['id'] ?>"><i class="fa fa-pen"></i>
+                                                    </a>
+                                                </td>
                                             </tr>
                                         <?php endwhile; ?>
                                     </tbody>
@@ -116,6 +121,51 @@ try {
                         </div>
                     </div>
 
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                        Register New Boondock Echo
+                    </button>
+
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Register New Boondock Echo</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="col-md-8">
+                                        <label class="small mb-1" for="inputFrequency">MAC</label>
+                                        <input class="form-control" id="inputFrequency" type="text" placeholder="Enter MAC Address" value="" />
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="small mb-1" for="inputFrequency">Name</label>
+                                        <input class="form-control" id="inputFrequency" type="text" placeholder="Give your Boondock a friendly name" value="" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small mb-1" for="inputFrequency">Station</label>
+                                        <input class="form-control" id="inputFrequency" type="text" placeholder="e.g. Police, Fire" value="" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="small mb-1" for="inputFrequency">Frequency</label>
+                                        <input class="form-control" id="inputFrequency" type="text" placeholder="Station Frequency" value="" />
+                                    </div>
+
+                                </div>
+
+
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary">Register</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- /.container-fluid -->
 
@@ -125,7 +175,7 @@ try {
             <!-- End of Main Content -->
 
             <!-- Footer -->
-            <?php include '_footer.php' ?>;
+            <?php include '_footer.php' ?>
             <!-- End of Footer -->
 
         </div>
@@ -140,8 +190,8 @@ try {
     </a>
 
     <!-- Logout Modal-->
-    <?php include '_logout.php' ?>;
-    <?php include '_bootstrap.php' ?>;
+    <?php include '_logout.php' ?>
+    <?php include '_bootstrap.php' ?>
 
 
 </body>

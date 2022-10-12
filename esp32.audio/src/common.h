@@ -2,6 +2,8 @@
 #ifndef __BOONDOCK_COMMON__
 #define __BOONDOCK_COMMON__
 
+#include "Arduino.h"
+
 #define STATE_INIT 0
 #define STATE_LISTENING 1
 #define STATE_RECORDING 2
@@ -10,14 +12,22 @@
 #define STATE_FILE_READ_ERROR 5
 #define STATE_FILE_SEND_ERROR 6
 
+RTC_DATA_ATTR bool audio_on_speaker = DEFAULT_AUDIO_ON_SPEAKER;
+RTC_DATA_ATTR int silence_before_recording_stops = DEFAULT_SILENSE_BEFORE_RECORDING_STOPS;
+RTC_DATA_ATTR int min_recording_duration = DEFAULT_MIN_RECORDING_DURATION;
+RTC_DATA_ATTR int max_recording_duration = DEFAULT_MAX_RECORDING_DURATION;
+RTC_DATA_ATTR int min_sound = DEFAULT_MIN_SOUND;
+RTC_DATA_ATTR int kit_volume = DEFAULT_SPEAKER_VOLUME;
+RTC_DATA_ATTR int rx_enabled = true;
+RTC_DATA_ATTR int tx_enabled = false;
+
 int current_state = 0;
 
 #define USE_SDFAT
-#include "Arduino.h"
 #include "SD.h"
 #include "AudioTools.h"
 #include "AudioLibs/AudioKit.h"
-#include "data.h"
+#include "sdfs.h"
 #include <WiFi.h>
 #include "time.h"
 #include <PubSubClient.h>
@@ -25,11 +35,11 @@ int current_state = 0;
 #include "config.h"
 #include <HTTPClient.h>
 //#include <captiv.h>
+#include <button.h>
 
 RTC_DATA_ATTR int errorCount = 0;
 RTC_DATA_ATTR int readCount = 0;
 RTC_DATA_ATTR int sentCount = 0;
-RTC_DATA_ATTR int bootCount = 0;
 
 const char *DEFAULT_SUB_TOPIC = "";
 
@@ -43,67 +53,154 @@ WiFiClient client;
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
-long silentSince = 0;
+unsigned long silentSince = 0;
+
+String filename = "";
+bool file_created = false;
 
 AudioKit kit;
 File root;
-File myFile;
+File my_recording_file;
+File my_sending_file;
 
 uint16_t sample_rate = 16000;
 uint8_t channels = 1; // The stream will have 1 channel
 
 uint16_t buffer[RECORDING_BUFFER_SIZE];
 
-void play(WAVDecoder &decoder, StreamCopy &copier)
+#define LED_BLUE 22
+
+int ledStateBlue = LOW;               // ledState used to set the LED
+unsigned long previousMillisBlue = 0; // will store last time LED was updated
+long intervalBlue = 1000;             // interval at which to blink (milliseconds)
+bool led_blink_done_Blue = false;
+bool led_should_blink_Blue = true;
+
+#define KEY1 36
+#define KEY2 13
+#define KEY3 19
+#define KEY4 23
+#define KEY5 18
+#define KEY6 5
+
+Button button1(KEY1, true);
+Button button2(KEY2, true);
+Button button3(KEY3, true);
+Button button4(KEY4, true);
+Button button5(KEY5, true);
+Button button6(KEY6, true);
+
+AudioKitStream i2s;                             // final output of decoded stream
+EncodedAudioStream dec(&i2s, new WAVDecoder()); // Decoding stream
+
+/*
+process_buttons()
+
+*/
+void process_buttons()
 {
-    while (decoder)
-        copier.copy();
+
+    if (button1.pressed())
+        Serial.println("Button 1 pressed");
+    if (button1.released())
+        Serial.println("Button 1 Released");
+    if (button1.toggled())
+        if (button1.read() == Button::PRESSED)
+            Serial.println("Button 1 has been pressed");
+        else
+            Serial.println("Button 1 has been released");
+
+    if (button2.pressed())
+        Serial.println("Button 2 pressed");
+    if (button2.released())
+        Serial.println("Button 2 Released");
+    if (button2.toggled())
+        if (button2.read() == Button::PRESSED)
+            Serial.println("Button 2 has been pressed");
+        else
+            Serial.println("Button 2 has been released");
+
+    if (button3.pressed())
+        Serial.println("Button 3 pressed");
+    if (button3.released())
+        Serial.println("Button 3 Released");
+    if (button3.toggled())
+        if (button3.read() == Button::PRESSED)
+            Serial.println("Button 3 has been pressed");
+        else
+            Serial.println("Button 3 has been released");
+
+    if (button4.pressed())
+        Serial.println("Button 4 pressed");
+    if (button4.released())
+        Serial.println("Button 4 Released");
+    if (button4.toggled())
+        if (button4.read() == Button::PRESSED)
+            Serial.println("Button 4 has been pressed");
+        else
+            Serial.println("Button 4 has been released");
+
+    if (button5.pressed())
+        Serial.println("Button 5 pressed");
+    if (button5.released())
+        Serial.println("Button5 Released");
+    if (button5.toggled())
+        if (button5.read() == Button::PRESSED)
+            Serial.println("Button 5 has been pressed");
+        else
+            Serial.println("Button 5 has been released");
+
+    if (button6.pressed())
+        Serial.println("Button 6 pressed");
+    if (button6.released())
+        Serial.println("Button 6 Released");
+    if (button6.toggled())
+        if (button6.read() == Button::PRESSED)
+            Serial.println("Button 6 has been pressed");
+        else
+            Serial.println("Button 6 has been released");
 }
 
-void audio_player(String URL)
+/*
+process_LED()
+
+*/
+void process_led()
 {
-    HTTPClient http;
+    unsigned long currentMillis = millis();
 
-    int httpCode = http.begin(URL.c_str()); // Specify the URL
-
-    Serial.println("Saving" + URL);
-
-    myFile = SD.open("/test.wav", FILE_WRITE);
-
-    if (httpCode > 0) // Check for the returning code
+    if (led_should_blink_Blue)
     {
-        http.writeToStream(&myFile);
-    }
-    else
-    {
-        Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
-    }
+        if (currentMillis - previousMillisBlue >= intervalBlue)
+        {
 
-    myFile.close();
-    Serial.println("Done!");
+            previousMillisBlue = currentMillis;
+
+            if (ledStateBlue == LOW)
+            {
+                ledStateBlue = HIGH;
+            }
+            else
+            {
+                ledStateBlue = LOW;
+            }
+
+            digitalWrite(LED_BLUE, ledStateBlue);
+        }
+    }
 }
 
-void player(String URL)
+/*
+blinkLED()
+Initalize hardware buttons, LED's etc.
+*/
+void blink_led(int LED, bool should_blink, long duration)
 {
-
-    URLStream url("AAA", "608980608980");
-    I2SStream i2s;                        // I2S stream
-    WAVDecoder decoder(i2s);              // decode wav to pcm and send it to I2S
-    EncodedAudioStream out(i2s, decoder); // Decoder stream
-    StreamCopy copier(out, url);          // copy in to out
-
-    // setup i2s
-    auto config = i2s.defaultConfig(TX_MODE);
-    config.sample_rate = 32000;
-    config.bits_per_sample = 32;
-    config.channels = 1;
-    i2s.begin(config);
-
-    // rhasspy
-    url.begin(URL.c_str(), "audio/wav", GET);
-    play(decoder, copier);
-
-    url.end();
+    if (LED == LED_BLUE)
+    {
+        intervalBlue = duration;
+        led_should_blink_Blue = should_blink;
+    }
 }
 
 String get_beacon_id()
@@ -118,6 +215,85 @@ String getFullTopic(String topic)
     String t = get_beacon_id();
     t = t + "/" + topic;
     return t;
+}
+
+// send String values
+bool send_mqtt_string(String topic, String value, bool retain)
+{
+    bool res = false;
+
+    topic = getFullTopic(topic);
+    char tempStringTopic[50];
+    char tempStringvalue[20];
+    topic.toCharArray(tempStringTopic, topic.length() + 1);
+    value.toCharArray(tempStringvalue, value.length() + 1);
+    res = mqttClient.publish(tempStringTopic, tempStringvalue, retain);
+
+    if (res != true)
+    {
+        Serial.print(" MQTT Send Failure");
+    }
+
+    return res;
+}
+
+bool send_mqtt_int(String topic, long value, bool retain)
+{
+
+    bool res = false;
+
+    if (mqttClient.connected())
+    {
+        topic = getFullTopic(topic);
+        char tempStringTopic[50];
+        char tempStringvalue[20];
+
+        topic.toCharArray(tempStringTopic, topic.length() + 1);
+        dtostrf(value, 1, 0, tempStringvalue);
+        res = mqttClient.publish(tempStringTopic, tempStringvalue);
+
+        if (res != true)
+        {
+            Serial.print(" MQTT Send Failure");
+        }
+    }
+    else
+        Serial.print(" MQTT Not connected");
+
+    return res;
+}
+
+void play(WAVDecoder &decoder, StreamCopy &copier)
+{
+    while (decoder)
+        copier.copy();
+}
+
+URLStream url(DEFAULT_BUFFER_SIZE); // or replace with ICYStream to get metadata
+void audio_player(String link)
+{
+
+    String file_link = FILE_LOCATION + link;
+
+    StreamCopy copier(dec, url); // copy url to decoder
+    // setup I2S based on sampling rate provided by decoder
+    dec.begin();
+    url.begin(file_link.c_str(), "audio/wav");
+
+    Serial.println("File size is " + String(_FILE_SIZE));
+
+    int packet_count = (_FILE_SIZE / 1024) + 2;
+
+    while (packet_count > 0)
+    {
+        copier.copy();
+        packet_count--;
+    }
+
+    url.flush();
+   // url.end();
+    copier.end();
+    Serial.println(  "Playback over");
 }
 
 void mqtt_callback(char *topic, byte *message, unsigned int length)
@@ -150,20 +326,36 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
 
     bool iscommandvalid = true;
 
+    /*
+      audio_on_speaker = ;
+  silence_before_recording_stops = ;
+  min_recording_duration = ;
+  max_recording_duration = ;
+  min_sound = ;
+  kit_volume = ;
+
+*/
+
     // FREQUENCY OF DATA SENDING
-    if (cmd == "dataFrequency")
+    if (cmd == "speaker")
     {
         if (DEBUG == DEBUG_ALL)
-            Serial.print("Changing Frequency to ");
-        // data_frequency = messageTemp.toInt();
+            Serial.print("Changing Speaker Setting ");
+        audio_on_speaker = messageTemp.toInt();
     }
 
-    // DO AN OTA BASED ON PASSED FIRMWARE
-    else if (cmd == "ota")
+    else if (cmd == "min_sound")
     {
         if (DEBUG == DEBUG_ALL)
-            Serial.print("Custom Firmware update");
-        // updateFirmware(messageTemp);
+            Serial.print("Min Sound updated");
+        min_sound = messageTemp.toInt();
+    }
+
+    else if (cmd == "kit_volume")
+    {
+        if (DEBUG == DEBUG_ALL)
+            Serial.print("Kit Volume changed");
+        kit_volume = messageTemp.toInt();
     }
 
     else if (cmd == "restart" || cmd == "reboot")
@@ -171,6 +363,20 @@ void mqtt_callback(char *topic, byte *message, unsigned int length)
         if (DEBUG == DEBUG_ALL)
             Serial.print("Rebooting by mqtt");
         ESP.restart();
+    }
+
+    else if (cmd == "min_duration")
+    {
+        if (DEBUG == DEBUG_ALL)
+            Serial.print("Min Recording duration Changed");
+        min_recording_duration = messageTemp.toInt();
+    }
+
+    else if (cmd == "max_duration")
+    {
+        if (DEBUG == DEBUG_ALL)
+            Serial.print("Max Recording duration Changed");
+        max_recording_duration = messageTemp.toInt();
     }
 
     else if (cmd == "timeZone")
@@ -215,6 +421,8 @@ void subscribe_to_topic()
     char tempStringSubsTopic[50];
     substopic.toCharArray(tempStringSubsTopic, substopic.length() + 1);
 
+    if (DEBUG == DEBUG_ALL)
+        Serial.println("Subscribe to " + substopic);
     mqttClient.subscribe(tempStringSubsTopic);
 }
 // Send ERROR Message
@@ -261,11 +469,31 @@ void mqtt_reconnect()
         //  microSecondsSinceBoot = esp_timer_get_time() - previousSecondsSinceBoot;
         //  Serial.println("MQTT Connect:" + String(microSecondsSinceBoot / 1000));
     }
+
+    send_mqtt_string("status", "online", false);
 }
 
 // Send device Configurations
-void send_summary()
+void mqtt_send_summary()
 {
+    /*
+      audio_on_speaker = ;
+  silence_before_recording_stops = ;
+  min_recording_duration = ;
+  max_recording_duration = ;
+  min_sound = ;
+  kit_volume = ;
+
+*/
+    send_mqtt_string("system/sw", String(SW_VERSION), false);
+    send_mqtt_string("system/hw", String(HW_VERSION), false);
+
+    send_mqtt_string("config/min_sound", String(min_sound), false);
+    send_mqtt_string("config/speaker", String(audio_on_speaker), false);
+    send_mqtt_string("config/silence", String(silence_before_recording_stops), false);
+    send_mqtt_string("config/min_duration", String(min_recording_duration), false);
+    send_mqtt_string("config/max_duration", String(max_recording_duration), false);
+    send_mqtt_string("config/kit_volume", String(kit_volume), false);
 }
 
 void clean_up()
@@ -278,6 +506,8 @@ Connects to WiFi
 *******************************/
 void connect_wifi(String ssid, String password)
 {
+    if (DEBUG != DEBUG_AUDIO)
+        Serial.println("Connecting to wifi...");
 
     WiFi.mode(WIFI_STA);
     Serial.println();
@@ -298,18 +528,21 @@ void connect_wifi(String ssid, String password)
 // format bytes
 String formatBytes(unsigned int bytes)
 {
+    String res;
+
     if (bytes < 1024)
     {
-        return String(bytes) + "B";
+        res = String(bytes) + "B";
     }
     else if (bytes < (1024 * 1024))
     {
-        return String(bytes / 1024.0) + "KB";
+        res = String(bytes / 1024.0) + "KB";
     }
     else if (bytes < (1024 * 1024 * 1024))
     {
-        return String(bytes / 1024.0 / 1024.0) + "MB";
+        res = String(bytes / 1024.0 / 1024.0) + "MB";
     }
+    return res;
 }
 
 /******************************
@@ -323,12 +556,14 @@ bool upload_file_to_server(String filename)
     String getAll;
     String getBody;
 
+    digitalWrite(LED_BLUE, LOW);
+
     // read file from SD
     // define file
-    myFile = SD.open(filename, FILE_READ);
+    my_sending_file = SD.open(filename, FILE_READ);
 
-    String fileName = myFile.name();
-    String fileSize = formatBytes(myFile.size());
+    String fileName = my_sending_file.name();
+    String fileSize = formatBytes(my_sending_file.size());
     if (DEBUG == DEBUG_ALL)
     {
         Serial.println("file exists");
@@ -337,7 +572,7 @@ bool upload_file_to_server(String filename)
     String myMac = WiFi.macAddress();
     myMac.replace(":", "");
 
-    if (myFile)
+    if (my_sending_file)
     {
         if (DEBUG == DEBUG_ALL)
         {
@@ -366,7 +601,7 @@ bool upload_file_to_server(String filename)
 
         String tail = "\r\n--BoonDock--\r\n";
 
-        int contentLength = requestHead.length() + myFile.size() + tail.length();
+        int contentLength = requestHead.length() + my_sending_file.size() + tail.length();
 
         client.connect(serverName.c_str(), 80);
 
@@ -382,15 +617,15 @@ bool upload_file_to_server(String filename)
         // and only work in ESP software version after 2.3.0
         // if your version is lower than please update
         // esp software to last version or use bellow comment code
-        client.write(myFile);
+        client.write(my_sending_file);
         // create file buffer
         const int bufSize = 2048;
         byte clientBuf[bufSize];
         int clientCount = 0;
 
-        while (myFile.available())
+        while (my_sending_file.available())
         {
-            clientBuf[clientCount] = myFile.read();
+            clientBuf[clientCount] = my_sending_file.read();
             clientCount++;
             if (clientCount > (bufSize - 1))
             {
@@ -466,15 +701,121 @@ bool upload_file_to_server(String filename)
     }
 
     // close file
-    myFile.close();
+    my_sending_file.close();
+
+    digitalWrite(LED_BLUE, HIGH);
 
     return res;
 }
 
+String httpGETRequest(const char *serverName)
+{
+    HTTPClient http;
+
+    // Your IP address with path or Domain name with URL path
+    http.begin(serverName);
+
+    // Send HTTP POST request
+    int httpResponseCode = http.GET();
+
+    String payload = "ERROR";
+
+    if (httpResponseCode > 0)
+    {
+        Serial.print("HTTP Response code: ");
+        Serial.println(httpResponseCode);
+        payload = http.getString();
+    }
+    else
+    {
+        Serial.print("Error code: ");
+        Serial.println(httpResponseCode);
+    }
+    // Free resources
+    http.end();
+
+    return payload;
+}
+
+/******************************
+get_encoded_config_value()
+Splits the string to get the values from Encoded String
+*******************************/
+String get_encoded_config_value(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = {0, -1};
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++)
+    {
+        if (data.charAt(i) == separator || i == maxIndex)
+        {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i + 1 : i;
+        }
+    }
+
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
+}
+
+/******************************
+get_config()
+Upload file to the Server
+*******************************/
+
+bool get_config()
+{
+    String jsonBuffer;
+    String myMac = WiFi.macAddress();
+    myMac.replace(":", "");
+    String serverPath = "http://app.boondock.live//get_config.php?did=" + myMac;
+    if (DEBUG == DEBUG_ALL)
+        Serial.println(serverPath);
+    jsonBuffer = httpGETRequest(serverPath.c_str());
+
+    if (jsonBuffer == "ERROR")
+    {
+        Serial.println("Error getting config from server");
+        return false;
+    }
+    else
+
+    {
+        rx_enabled = get_encoded_config_value(jsonBuffer, ':', 1).toInt();
+        tx_enabled = get_encoded_config_value(jsonBuffer, ':', 2).toInt();
+        audio_on_speaker = get_encoded_config_value(jsonBuffer, ':', 3).toInt();
+        kit_volume = get_encoded_config_value(jsonBuffer, ':', 4).toInt();
+        min_sound = get_encoded_config_value(jsonBuffer, ':', 5).toInt();
+        silence_before_recording_stops = get_encoded_config_value(jsonBuffer, ':', 6).toInt();
+        min_recording_duration = get_encoded_config_value(jsonBuffer, ':', 7).toInt();
+        max_recording_duration = get_encoded_config_value(jsonBuffer, ':', 8).toInt();
+        if (DEBUG == DEBUG_ALL)
+        {
+            Serial.println(jsonBuffer);
+            Serial.println("RX Enabled = " + String(rx_enabled));
+            Serial.println("TX Enabled = " + String(tx_enabled));
+            Serial.println("Speaker    = " + String(audio_on_speaker));
+            Serial.println("Spk Volume = " + String(kit_volume));
+            Serial.println("Audio Trig = " + String(min_sound));
+            Serial.println("Silence    = " + String(silence_before_recording_stops));
+            Serial.println("Min Record = " + String(min_recording_duration));
+            Serial.println("Max Record = " + String(max_recording_duration));
+        }
+        return true;
+    }
+}
+
+/******************************
+init_SD()
+Initialize SD Card
+*******************************/
 bool init_SD()
 {
     bool res = false;
-    Serial.print("Initializing SD card...");
+    if (DEBUG != DEBUG_AUDIO)
+        Serial.println("Initializing SD card...");
 
     int r = 0;
     while (r < 5)
@@ -485,25 +826,10 @@ bool init_SD()
         }
         else
         {
-            /*
-            uint8_t cardType = SD.cardType();
-            if (cardType == CARD_NONE)
-                Serial.println("No SD_MMC card attached");
-
-            Serial.print("SD_MMC Card Type: ");
-             if (cardType == CARD_MMC)
-                Serial.println("MMC");
-            else if (cardType == CARD_SD)
-                Serial.println("SDSC");
-            else if (cardType == CARD_SDHC)
-                Serial.println("SDHC");
-            else
-            Serial.println("UNKNOWN");
-            */
             uint64_t cardSize = SD.cardSize() / (1024 * 1024);
             Serial.printf("SD_MMC Card Size: %lluMB\n", cardSize);
             Serial.println("initialization done.");
-            // init_filesystem(SD);
+            init_filesystem(SD);
             res = true;
             break;
         }
@@ -512,54 +838,34 @@ bool init_SD()
     return res;
 }
 
-// measure basic properties of the input signal
-// Return if there is Sound
+/******************************
+
+*******************************/
 bool measure_sound(int buflen, bool sample = false)
 {
     int16_t signalMax = 0, signalMin = 1024, signalTotal = 0;
     int soundMeasure = 0;
     int buffer_Size = 0;
 
-    if (sample)
-        buffer_Size = SAMPLING_BUFFER_SIZE;
-    else
-        buffer_Size = RECORDING_BUFFER_SIZE;
-
-    for (int i = 0; i < buflen; i++)
+    for (int i = 0; i < RECORDING_BUFFER_SIZE; i++)
     {
         int16_t k = buffer[i];
         signalMin = min(signalMin, k);
         signalMax = max(signalMax, k);
     }
 
-    signalTotal = abs(signalMin) + abs(signalMax);
-
-    soundMeasure = map(signalTotal, 0, 20000, 0, 100);
-
-    // Serial.print("Sound Level:"); Serial.print(soundMeasure); Serial.println(",");
-    if (DEBUG == DEBUG_AUDIO)
-    {
-        Serial.print("Sound Level:");
-        Serial.print(soundMeasure);
-        Serial.print(",");
-        Serial.print("Min:");
-        Serial.println(signalMin);
-        Serial.print("Max:");
-        Serial.println(signalMax);
-    }
-
-    return (soundMeasure > MIN_SOUND); // Returns true when sound is greater than Thrashold
+    soundMeasure = map(signalMax, 0, 32767, 0, 100);
+    return (soundMeasure > min_sound); // Returns true when sound is greater than Thrashold
 }
 
-// measure basic properties of the input signal
-// Return if there is Sound
+/******************************
+
+*******************************/
 bool check_sound(int buflen)
 {
     int16_t signalMax = 0, signalMin = 1024, signalTotal = 0;
     int soundMeasure = 0;
     int buffer_Size = 0;
-
-    buffer_Size = SAMPLING_BUFFER_SIZE;
 
     for (int i = 0; i < SAMPLING_BUFFER_SIZE; i++)
     {
@@ -568,53 +874,73 @@ bool check_sound(int buflen)
         signalMax = max(signalMax, k);
     }
 
-    signalTotal = abs(signalMin) + abs(signalMax);
-
-    soundMeasure = map(signalTotal, 0, 38000, 0, 100);
+    soundMeasure = map(signalMax, 0, 32767, 0, 100);
 
     if (DEBUG == DEBUG_AUDIO)
     {
         Serial.print("Total:");
         Serial.println(soundMeasure);
-        // Serial.print(","); Serial.print("Min:"); Serial.print(signalMin);
-        // Serial.print(","); Serial.print("Max:"); Serial.print(signalMax);
-        delay(10);
     }
-    // Serial.println("");
 
-    // Serial.print("Sound Level:"); Serial.print(soundMeasure); Serial.println(",");
-    if (DEBUG == DEBUG_NONE || DEBUG == DEBUG_ALL  && soundMeasure > MIN_SOUND)
+    if (DEBUG == DEBUG_NONE && soundMeasure > min_sound)
     {
-        Serial.print("Sound Level : ");
+        Serial.print("~");
         Serial.print(soundMeasure);
+        Serial.print("~");
     }
-    return (soundMeasure > MIN_SOUND); // Returns true when sound is greater than Thrashold
+
+    return (soundMeasure > min_sound); // Returns true when sound is greater than Thrashold
 }
 
-// Check for Silence
-bool is_silent()
+/******************************
+
+*******************************/
+bool is_silent(int buflen, bool sample)
 {
     //  Serial.print(">");
     long currentMillis = millis();
 
-    if (measure_sound(false))
+    if (measure_sound(buflen, false))
     {
         silentSince = millis();
         return false;
     }
-    else if ((currentMillis - silentSince) > SILENSE_BEFORE_RECORDING_STOPS)
+    else if ((currentMillis - silentSince) > silence_before_recording_stops)
+    {
+        if (DEBUG == DEBUG_ALL)
+            Serial.println("Silent for " + String(currentMillis - silentSince) + " Seconds");
         return true;
+    }
     else
         return false;
 }
 
-/*
+/******************************
+
+*******************************/
+void init_hardware()
+{
+    Serial.println("Initializing Hardware...");
+    pinMode(LED_BLUE, OUTPUT);
+    digitalWrite(LED_BLUE, HIGH);
+
+    pinMode(PIN_KEY1, INPUT);
+    pinMode(PIN_KEY2, INPUT);
+    pinMode(PIN_KEY3, INPUT);
+    pinMode(PIN_KEY4, INPUT);
+    pinMode(PIN_KEY5, INPUT);
+    pinMode(PIN_KEY6, INPUT);
+}
+
+/******************************
 void init_mic()
 Initialize the Microphone
 Sampling rate must match the Wav Encoder
-*/
-void init_mic()
+*******************************/
+void init_mic_and_speaker()
 {
+    Serial.println("Initializing Mic...");
+
     auto cfg = kit.defaultConfig(AudioInputOutput);
     cfg.adc_input = INPUT_LINE; // microphone
     cfg.sample_rate = AUDIO_HAL_08K_SAMPLES;
@@ -622,39 +948,21 @@ void init_mic()
 
     // cfg.sample_rate = AUDIO_HAL_22K_SAMPLES;
     kit.begin(cfg);
+    kit.setVolume(kit_volume);
 }
 
-/*
+/******************************
 void capture_audio()
 Captures an Audio sample
 Sampling rate must match the Wav Encoder
-*/
+*******************************/
 String capture_audio(int buflen)
 {
+
     silentSince = millis();
     unsigned long StartTime = millis(); // Startime for the File
-    String filename = "";
-    // WAVAudioInfo mywav = default_config;
-
-    // mywav.sample_rate = AUDIO_HAL_48K_SAMPLES;
-    // mywav.bits_per_sample = AUDIO_HAL_BIT_LENGTH_16BITS;
-    bool file_created = false;
-    int r = 0;
-    while (r < 5)
-    {
-        filename = fileLocation + "a_" + String(random(99)) + "_" + String(random(999999)) + ".wav";
-        //      Serial.println("Opening file for read write : " + filename);
-        myFile = SD.open(filename, FILE_WRITE);
-        if (myFile)
-        {
-            file_created = true;
-            break;
-        }
-        else
-            r++;
-    }
-
-    WAVEncoder encoder(myFile);
+    digitalWrite(LED_BLUE, HIGH);
+    WAVEncoder encoder(my_recording_file);
     encoder.begin();
 
     if (file_created)
@@ -664,33 +972,41 @@ String capture_audio(int buflen)
     }
 
     unsigned long CurrentTime = millis();
-    unsigned long ElapsedTimeinSeconds = CurrentTime - StartTime;
+    unsigned long ElapsedTime = CurrentTime - StartTime;
 
     for (int i = 0; i < MAX_AUDIO_BUFFER; i++)
     {
-        ElapsedTimeinSeconds = (CurrentTime - StartTime) / 1000;
+        CurrentTime = millis();
+        ElapsedTime = (CurrentTime - StartTime);
 
-        if (ElapsedTimeinSeconds > MAX_RECORDING_DURATION)
-        {
-            if (DEBUG == DEBUG_ALL)
-                Serial.println("Closing file by Duration");
-            myFile.close();
-            break;
-        }
         size_t len = kit.read(buffer, RECORDING_BUFFER_SIZE);
-        if (AUDIO_ON_SPEAKER)
+        if (audio_on_speaker)
             kit.write(buffer, len);
 
-        if (is_silent() == true)
+        if (ElapsedTime > min_recording_duration)
         {
-            if (DEBUG == DEBUG_ALL)
-                Serial.println("Closing file due to silence");
-            myFile.close();
-            break;
+            if (ElapsedTime > max_recording_duration)
+            {
+                if (DEBUG == DEBUG_ALL)
+                    Serial.println("Closing file by Duration");
+                file_created = false;
+                my_recording_file.close();
+                break;
+            }
+
+            if (is_silent(len, false) == true)
+            {
+                if (DEBUG == DEBUG_ALL)
+                    Serial.println("Closing file due to silence");
+                file_created = false;
+
+                my_recording_file.close();
+                break;
+            }
         }
 
         // Serial.println("Read bytes " + String(len));
-        if (myFile)
+        if (my_recording_file)
         {
             encoder.write(buffer, len);
             // Serial.print("+");
@@ -698,23 +1014,74 @@ String capture_audio(int buflen)
         else
         {
             //  Serial.println("error opening " + filename);
-            myFile.close();
+            my_recording_file.close();
             if (DEBUG == DEBUG_ALL)
                 Serial.println("Closing file due to error");
             current_state = STATE_SD_WRITE_ERROR;
+            file_created = false;
             break;
         }
     }
 
-    if (myFile)
+    if (my_recording_file)
     {
-        myFile.close();
+        my_recording_file.close();
         if (DEBUG == DEBUG_ALL)
             Serial.println("Closing file by max buffers");
+        file_created = false;
     }
     CurrentTime = millis(); // Get Current Time
 
     return filename;
+
+    digitalWrite(LED_BLUE, HIGH);
+}
+
+/*
+void capture_audio()
+Captures an Audio sample
+Sampling rate must match the Wav Encoder
+*/
+String capture_to_cloud(int buflen)
+{
+
+    silentSince = millis();
+    unsigned long StartTime = millis(); // Startime for the File
+    digitalWrite(LED_BLUE, HIGH);
+
+    unsigned long CurrentTime = millis();
+    unsigned long ElapsedTime = CurrentTime - StartTime;
+
+    for (int i = 0; i < MAX_AUDIO_BUFFER; i++)
+    {
+        CurrentTime = millis();
+        ElapsedTime = (CurrentTime - StartTime);
+
+        size_t len = kit.read(buffer, RECORDING_BUFFER_SIZE);
+        if (audio_on_speaker)
+            kit.write(buffer, len);
+
+        if (ElapsedTime > min_recording_duration)
+        {
+            if (ElapsedTime > max_recording_duration)
+            {
+                if (DEBUG == DEBUG_ALL)
+                    Serial.println("Closing file by Duration");
+                break;
+            }
+
+            if (is_silent(len, false) == true)
+            {
+                if (DEBUG == DEBUG_ALL)
+                    Serial.println("Closing file due to silence");
+                break;
+            }
+        }
+    }
+
+    CurrentTime = millis(); // Get Current Time
+    digitalWrite(LED_BLUE, HIGH);
+    return "";
 }
 
 // UrlStream -copy-> EncodedAudioStream -> I2S
