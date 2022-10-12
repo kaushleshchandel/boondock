@@ -1,5 +1,5 @@
 ## Boondock Echo
-![logo](/mediakit/logos/logo_boondock_small.jpg)
+![logo](/mediakit/logos/boondock.png)
 
 ### What is Boondock Echo?
 Boondock Echo is a time-shift audio project created for emergency radio communications. A Boondock Echo module connects to transceivers with audio cables between the mic and speaker of the radio and the speaker and mic of the Bookdock Echo moule. 
