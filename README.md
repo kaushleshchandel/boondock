@@ -9,6 +9,8 @@ The Boondock Echo listens to the radio for traffic. Whenever new traffic is rece
 Having the audio files on the cloud, enables us to have some really cool features to a radio, that were not possible earlier. like, converting audio to text, using text to speech, audio noice reduction, and pre-porcessing audio.
 
 
+ [![Watch the video](/mediakit/images/thumb-intro.png)](https://youtu.be/K9tplKsggrA)
+
 ### How to get started with Boondock
 All the source code you would need is included in this repositories. You will also need to create google cloud account for Text to Speech & Speech to Text features. The build instructions are split into four steps. Each part has a linked instructional video.
 
@@ -23,13 +25,17 @@ All the source code you would need is included in this repositories. You will al
 ### STEP 1. Assembling hardware
 [CLICK HERE](/3d.print/README.md) for Assembly instructions
 
+ [![Watch the video](/mediakit/images/thumb-assembly.png)](https://youtu.be/K9tplKsggrA)
+
 
 ### STEP 2. Programming the Boondock
 [CLICK HERE](/esp32.audio/README.md) for details on Programming the Boondock Echo.
 
+ [![Watch the video](/mediakit/images/thumb-programming.png)](https://youtu.be/K9tplKsggrA)
 
 ### STEP 3. Setting up the Web Server
 [CLICK HERE](/web.server/README.md) for instructions on setting up the web server
 
 ### STEP 4. Getting Started
 
+ [![Watch the video](/mediakit/images/thumb-getting-started.png)](https://youtu.be/K9tplKsggrA)
