@@ -3,7 +3,10 @@
 
 ### What is Boondock Echo?
 Boondock Echo is a time-shift audio project created for emergency radio communications. A Boondock Echo module connects to transceivers with audio cables between the mic and speaker of the radio and the speaker and mic of the Bookdock Echo moule. 
-The Boondock Echo listens to the radio for traffic. Whenever new traffic is received, it captures the audio as a .mp3 on a local sd card, and then sends the file to sever for storage, and queing, and playback. Users can play back messages on the Boondock browser interface or que messages for transmission on a radio.
+
+The Boondock Echo listens to the radio for traffic. Whenever new traffic is received, it captures the audio as a .wav on a local sd card, and then sends the file to sever for storage, and queing, and playback. Users can play back messages on the Boondock browser interface or que messages for transmission on a radio.
+
+Having the audio files on the cloud, enables us to have some really cool features to a radio, that were not possible earlier. like, converting audio to text, using text to speech, audio noice reduction, and pre-porcessing audio.
 
 
 ### How to get started with Boondock
@@ -17,17 +20,16 @@ All the source code you would need is included in this repositories. You will al
 </ol>
 
 
-## STEP 1. Assembling hardware
+### STEP 1. Assembling hardware
 [CLICK HERE](/3d.print/README.md) for Assembly instructions
 
 
-## STEP 2. Programming the Boondock
-[CLICK HERE](/esp32.audio/README.md) for details on Programming the Audio kit.
+### STEP 2. Programming the Boondock
+[CLICK HERE](/esp32.audio/README.md) for details on Programming the Boondock Echo.
 
 
-## STEP 3. Setting up the Web Server
+### STEP 3. Setting up the Web Server
 [CLICK HERE](/web.server/README.md) for instructions on setting up the web server
 
-
-## STEP 4. Getting Started
+### STEP 4. Getting Started
 
