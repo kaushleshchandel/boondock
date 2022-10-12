@@ -18,17 +18,15 @@ All the source code you would need is included in this repositories. You will al
 
 
 ## STEP 1. Assembling hardware
-
-[CLICK HERE](/3d.print/README.md) for build instructions
+[CLICK HERE](/3d.print/README.md) for Assembly instructions
 
 
 ## STEP 2. Programming the Boondock
-
 [CLICK HERE](/esp32.audio/README.md) for details on Programming the Audio kit.
 
 
 ## STEP 3. Setting up the Web Server
-![ESP32 Audio Kit](/3d.print/ESP32AudioKit.jpg)
+[CLICK HERE](/web.server/README.md) for instructions on setting up the web server
 
 
 ## STEP 4. Getting Started
