@@ -16,7 +16,7 @@ The Boondock Echo listens to the radio for traffic. Whenever new traffic is rece
 </ol>
 
 ## Core Components
-To make boondock echo works, you need Google cloud account for maps, text to speech & speech to text translation, a Apache based webserver, and an ESP32 device with firmware. Here are list of key components
+To make boondock echo work, you need Google cloud account for maps, text to speech & speech to text translation, a Apache based webserver, and an ESP32 device with firmware. Here are list of key components
 
 <ol>
   <li>ESP32 based device firmware</li>
