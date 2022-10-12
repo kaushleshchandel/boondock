@@ -1,11 +1,11 @@
-# Boondock Echo
+## Boondock Echo
 ![logo](/mediakit/logos/logo_boondock_small.jpg)
 
-## What is Boondock Echo?
+### What is Boondock Echo?
 Boondock Echo is a time-shift audio project created for emergency radio communications. A Boondock Echo module connects to transceivers with audio cables between the mic and speaker of the radio and the speaker and mic of the Bookdock Echo moule. 
 The Boondock Echo listens to the radio for traffic. Whenever new traffic is received, it captures the audio as a .mp3 on a local sd card, and then sends the file to sever for storage, and queing, and playback. Users can play back messages on the Boondock browser interface or que messages for transmission on a radio.
 
-## Key features
+### Key features
 <ol>
   <li>Made from commercial off-the-shelf (COTS) components</li>
   <li>Supports basic radios like Baofeng UV-5R</li>
@@ -15,18 +15,19 @@ The Boondock Echo listens to the radio for traffic. Whenever new traffic is rece
   <li>Create groups of radios</li>
 </ol>
 
-## Core Components
-To make boondock echo work, you need Google cloud account for maps, text to speech & speech to text translation, a Apache based webserver, and an ESP32 device with firmware. Here are list of key components
+
+### Building a Boondock Echo
+The build instructions are split into four parts. Each part has a linked instructional video.
 
 <ol>
-  <li>ESP32 based device firmware</li>
-  <li>Apache based web server</li>
-  <li>Mosquitto MQTT server</li>
-  <li>Google API credentials for google services</li>
+  <li>Assembling the hardware</li>
+  <li>Programming the Boondock</li>
+  <li>Setting up the Web Server</li>
+  <li>Getting Started</li>
 </ol>
 
 
-## Building a Boondock Echo
+## 1. Assembling hardware
 
 [CLICK HERE](/3d.print/README.md) for build instructions
 
@@ -48,7 +49,7 @@ The following parts are what we used to make the prototype.  Other substitutes a
 </ol>
 
 
-## Programming the ESP32 Audio kit
+## 2. Programming the Boondock
 
 There are several versions of ESP32 Audio kits available in the market. The one used for the build is ESP32 Audio Kit from AI Thinker. Other boards can be supported with changes to the code. Right now, we are focusing on kit by AI Thinker.
 
@@ -56,4 +57,7 @@ There are several versions of ESP32 Audio kits available in the market. The one 
 
 [CLICK HERE](/esp32.audio/README.md) for details on Programming the Audio kit.
 
-## Setting up the Web Server
+## 3. Setting up the Web Server
+
+## 4. Getting Started
+
