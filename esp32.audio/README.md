@@ -1,4 +1,4 @@
-### STEP 2. Programming the Boondock
+### STEP 3. Programming the Boondock
 
 After assembling your boondock echo, you need a micro USB cable to program your boondock Echo. [CLICK HERE](/3d.print/README.md) for Assembly instructions and video.
 
@@ -22,4 +22,15 @@ The system folder has some files that are used by boondock Echo. After the boond
 You can watch the detailed video on setting up Platform IO and Visual Studio code. If you are familiar with visual studio code, open the folder with ESP32 audio code.
 ![logo](/mediakit/images/codeesp32.png)
 
+
+Before you upload the code, you need to setup some configurations.
+
+![logo](/mediakit/images/vscode-config.png)
+
+
 Now connect the Boondock Echo using a Micro USB cable, and click upload.
+![logo](/mediakit/images/vscode-upload.png)
+
+Now your boondock echo is all set and ready for use.
+
+**Cheers!**
