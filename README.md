@@ -23,13 +23,13 @@ All the source code you would need is included in this repositories. You will al
 
 
 ### STEP 1. Assembling hardware
-[CLICK HERE](/3d.print/README.md) for Assembly instructions, or watch the video with a full walkthrough on assembling the boondock echo.
+[CLICK HERE](/3d.print/README.md) for assembly instructions, or watch the video with a full walkthrough on assembling the boondock echo.
 
  [![Watch the video](/mediakit/images/thumb-assembly.png)](https://youtu.be/K9tplKsggrA)
 
 
 ### STEP 2. Setting up the Web Server
-[CLICK HERE](/web.server/README.md) for instructions on setting up the web server
+[CLICK HERE](/web.server/README.md) for instructions on setting up the web server, or watch teh video for full walkthrough on setting up the web server, configuring Apache, MQTT, and PHP on Ubuntu machine.
 
 ### STEP 3. Programming the Boondock
 [CLICK HERE](/esp32.audio/README.md) for details on Programming the Boondock Echo.
@@ -37,5 +37,8 @@ All the source code you would need is included in this repositories. You will al
  [![Watch the video](/mediakit/images/programboondock.jpg)](https://youtu.be/K9tplKsggrA)
 
 ### STEP 4. Getting Started
+[CLICK HERE](/esp32.audio/README.md) for getting started instructions, or watch the full video explaining first time setup of the boondock echo with the web server.
 
  [![Watch the video](/mediakit/images/thumb-getting-started.png)](https://youtu.be/K9tplKsggrA)
+
+
