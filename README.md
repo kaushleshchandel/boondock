@@ -16,25 +16,25 @@ All the source code you would need is included in this repositories. You will al
 
 <ol>
   <li>Assembling the hardware</li>
-  <li>Programming the Boondock</li>
   <li>Setting up the Web Server</li>
+  <li>Programming the Boondock</li>
   <li>Getting Started</li>
 </ol>
 
 
 ### STEP 1. Assembling hardware
-[CLICK HERE](/3d.print/README.md) for Assembly instructions
+[CLICK HERE](/3d.print/README.md) for Assembly instructions, or watch the video with a full walkthrough on assembling the boondock echo.
 
  [![Watch the video](/mediakit/images/thumb-assembly.png)](https://youtu.be/K9tplKsggrA)
 
 
-### STEP 2. Programming the Boondock
+### STEP 2. Setting up the Web Server
+[CLICK HERE](/web.server/README.md) for instructions on setting up the web server
+
+### STEP 3. Programming the Boondock
 [CLICK HERE](/esp32.audio/README.md) for details on Programming the Boondock Echo.
 
- [![Watch the video](/mediakit/images/thumb-programming.png)](https://youtu.be/K9tplKsggrA)
-
-### STEP 3. Setting up the Web Server
-[CLICK HERE](/web.server/README.md) for instructions on setting up the web server
+ [![Watch the video](/mediakit/images/programboondock.jpg)](https://youtu.be/K9tplKsggrA)
 
 ### STEP 4. Getting Started
 
