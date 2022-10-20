@@ -4,7 +4,7 @@
  
 [![Boondock Echo ESP Audio Kit](/mediakit/images/BoondockEcho_Images_20221020_03.jpg)](/mediakit/images/BoondockEcho_Images_20221020_03.jpg)
  
-[![Boondock Echo New Top Case Design] (/mediakit/images/BoondockEcho_Images_20221020_04.jpg)](/mediakit/images/BoondockEcho_Images_20221020_04.jpg)
+[![Boondock Echo New Top Case Design](/mediakit/images/BoondockEcho_Images_20221020_04.jpg)](/mediakit/images/BoondockEcho_Images_20221020_04.jpg)
  
 [![Boondock Echo With Radio](/mediakit/images/BoondockEcho_Images_20221020_05.jpg)](/mediakit/images/BoondockEcho_Images_20221020_05.jpg)
  
