@@ -43,6 +43,8 @@ All the source code you would need is included in this repositories. You will al
 ### STEP 4. Getting Started
 [CLICK HERE](/esp32.audio/README.md) for getting started instructions, or watch the full video explaining first time setup of the boondock echo with the web server.
 
- [![Watch the video](/mediakit/images/thumb-getting-started.png )](https://youtu.be/K9tplKsggrA)
+ [![Watch the video](/mediakit/images/thumb-getting-started.png )](hhttps://youtu.be/A4lLrbWOsIA)
+ 
+ 
 
 
