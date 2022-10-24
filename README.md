@@ -38,7 +38,7 @@ All the source code you would need is included in this repositories. You will al
 ### STEP 3. Programming the Boondock
 [CLICK HERE](/esp32.audio/README.md) for details on Programming the Boondock Echo.
 
- [![Watch the video](/mediakit/images/thumb-programming.png )](https://youtu.be/K9tplKsggrA)
+ [![Watch the video](/mediakit/images/thumb-programming.png )](hhttps://youtu.be/A4lLrbWOsIA)
 
 ### STEP 4. Getting Started
 [CLICK HERE](/esp32.audio/README.md) for getting started instructions, or watch the full video explaining first time setup of the boondock echo with the web server.
